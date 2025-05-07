@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// TODO: handle delayed input actions
+// TODO: switch movement states more dynamically
+// TODO: camera sway
+
 public class PlayerMovement : MonoBehaviour
 {
     // This script is attached to the player object and handles player movement and actions
