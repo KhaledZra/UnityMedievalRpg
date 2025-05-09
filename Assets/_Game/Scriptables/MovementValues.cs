@@ -9,6 +9,8 @@ public class MovementValues : ScriptableObject
     public float crouchSpeed; // Speed when crouching
     public float jumpForce; // Force applied when jumping
     public float gravityValue; // Gravity value applied to the player
+    public float accelerationSpeed; // Speed at which the player accelerates
+    public float dragSpeed = 5f; // Speed at which the player decelerates
     
     // Saved values
     [ReadOnly, SerializeField] private float _defaultWalkSpeed = 5f;
@@ -16,6 +18,8 @@ public class MovementValues : ScriptableObject
     [ReadOnly, SerializeField] private float _defaultCrouchSpeed = 2f;
     [ReadOnly, SerializeField] private float _defaultJumpForce = 1f;
     [ReadOnly, SerializeField] private float _defaultGravityValue = -9.81f;
+    [ReadOnly, SerializeField] private float _defaultAccelerationSpeed = 10f;
+    [ReadOnly, SerializeField] private float _defaultDragSpeed = 5f;
 
     private void OnEnable()
     {
@@ -31,6 +35,8 @@ public class MovementValues : ScriptableObject
         crouchSpeed = _defaultCrouchSpeed;
         jumpForce = _defaultJumpForce;
         gravityValue = _defaultGravityValue;
+        accelerationSpeed = _defaultAccelerationSpeed;
+        dragSpeed = _defaultDragSpeed;
     }
     
     [Button]
@@ -42,5 +48,7 @@ public class MovementValues : ScriptableObject
         _defaultCrouchSpeed = crouchSpeed;
         _defaultJumpForce = jumpForce;
         _defaultGravityValue = gravityValue;
+        _defaultAccelerationSpeed = accelerationSpeed;
+        _defaultDragSpeed = dragSpeed;
     }
 }

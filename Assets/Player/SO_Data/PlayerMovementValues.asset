@@ -17,8 +17,12 @@ MonoBehaviour:
   crouchSpeed: 2
   jumpForce: 1
   gravityValue: -9.81
+  accelerationSpeed: 50
+  dragSpeed: 30
   _defaultWalkSpeed: 5
   _defaultSprintSpeed: 10
   _defaultCrouchSpeed: 2
   _defaultJumpForce: 1
   _defaultGravityValue: -9.81
+  _defaultAccelerationSpeed: 50
+  _defaultDragSpeed: 30
