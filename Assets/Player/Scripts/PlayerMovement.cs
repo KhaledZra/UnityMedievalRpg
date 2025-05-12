@@ -23,17 +23,17 @@ public class PlayerMovement : MonoBehaviour
     private Transform _cameraTransform;
     
     // Player state variables
-    private bool _isJumping;
-    private bool _isSprinting;
-    private bool _isCrouching;
+    [Header("Player State")] 
+    public PlayerMovementState _playerMovementState;
     
-    private float _currentMoveSpeed
+    private float CurrentMoveSpeed
     {
         get
         {
             // Determine the current move speed based on player state
-            if (_isCrouching) return _movementValues.crouchSpeed; 
-            if (_isSprinting) return _movementValues.sprintSpeed;
+            // if (_isCrouching) return _movementValues.crouchSpeed; 
+            if (_playerMovementState.CurrentMovementState == PlayerMovementState.EPlayerMovementState.Sprinting)
+                return _movementValues.sprintSpeed;
             
             return _movementValues.walkSpeed;
         }
@@ -48,7 +48,7 @@ public class PlayerMovement : MonoBehaviour
         // Bind the input actions
         PlayerInputHandler.Instance.JumpInputAction += OnJumpInput;
         PlayerInputHandler.Instance.SprintInputAction += OnSprintInput;
-        PlayerInputHandler.Instance.CrouchInputAction += OnCrouchInput;
+        // PlayerInputHandler.Instance.CrouchInputAction += OnCrouchInput;
     }
     
     private void OnDisable()
@@ -56,12 +56,32 @@ public class PlayerMovement : MonoBehaviour
         // Unbind the input actions
         PlayerInputHandler.Instance.JumpInputAction -= OnJumpInput;
         PlayerInputHandler.Instance.SprintInputAction -= OnSprintInput;
-        PlayerInputHandler.Instance.CrouchInputAction -= OnCrouchInput;
+        // PlayerInputHandler.Instance.CrouchInputAction -= OnCrouchInput;
     }
 
     private void FixedUpdate()
     {
+        UpdateMovementState();
         MovementUpdate();
+    }
+
+    
+    // todo: move this to the PlayerMovementState class
+    // todo: might switch to velocity based system in the future instead of input based
+    private void UpdateMovementState()
+    {
+        // Player is not moving
+        if (Vector2.Equals(PlayerInputHandler.Instance.MovementInputValue, Vector2.zero))
+        {
+            // Set the movement state to idle
+            _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Idle);
+        }
+        // Player is moving
+        else
+        {
+            // Set the movement state to walking
+            _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Walking);
+        }
     }
 
     private void MovementUpdate()
@@ -77,7 +97,7 @@ public class PlayerMovement : MonoBehaviour
         // Add drag to player
         Vector3 currentDrag = newVelocity.normalized * _movementValues.dragSpeed * Time.deltaTime;
         newVelocity = (newVelocity.magnitude > _movementValues.dragSpeed * Time.deltaTime) ? newVelocity - currentDrag : Vector3.zero;
-        newVelocity = Vector3.ClampMagnitude(newVelocity, _currentMoveSpeed);
+        newVelocity = Vector3.ClampMagnitude(newVelocity, CurrentMoveSpeed);
         
         // Apply Jump if state is active
         newVelocity.y = ApplyJump();
@@ -93,9 +113,10 @@ public class PlayerMovement : MonoBehaviour
     
     private float ApplyJump()
     {
-        if (_isJumping)
+        if (_playerMovementState.CurrentMovementState == PlayerMovementState.EPlayerMovementState.Jumping)
         {
-            _isJumping = false; // Reset the jump flag
+            // todo: probably needs a check to see if the player is grounded or w/e
+            _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Idle);
             return Mathf.Sqrt(_movementValues.jumpForce * -2.0f * _movementValues.gravityValue);
         }
 
@@ -108,45 +129,50 @@ public class PlayerMovement : MonoBehaviour
         if (_characterController.isGrounded)
         {
             // Set the jump flag to true
-            _isJumping = true;
+            _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Jumping);
+
         }
     }
     
-    private void OnCrouchInput(bool wantsToCrouch)
-    {
-        // handle crouch action
-        if (wantsToCrouch && !_isSprinting)
-        {
-            // Set the crouch flag to true and decrease the move speed
-            _isCrouching = true;
-            
-            // shrink the player collider
-            _characterController.height = 0.75f;
-            transform.localScale = new Vector3(1f, 0.5f, 1f);
-        }
-        else if (!wantsToCrouch && _isCrouching)
-        {
-            // Reset the crouch flag to false and increase the move speed
-            _isCrouching = false;
-            
-            // shrink the player collider
-            _characterController.height = 2f; // Set the height of the character controller to crouch height
-            transform.localScale = Vector3.one; // Set the scale of the player object to normal height
-        }
-    }
+    // todo: might remove crouching completly
+    // private void OnCrouchInput(bool wantsToCrouch)
+    // {
+    //     // handle crouch action
+    //     if (wantsToCrouch && !_isSprinting)
+    //     {
+    //         // Set the crouch flag to true and decrease the move speed
+    //         _isCrouching = true;
+    //         
+    //         // shrink the player collider
+    //         _characterController.height = 0.75f;
+    //         transform.localScale = new Vector3(1f, 0.5f, 1f);
+    //     }
+    //     else if (!wantsToCrouch && _isCrouching)
+    //     {
+    //         // Reset the crouch flag to false and increase the move speed
+    //         _isCrouching = false;
+    //         
+    //         // shrink the player collider
+    //         _characterController.height = 2f; // Set the height of the character controller to crouch height
+    //         transform.localScale = Vector3.one; // Set the scale of the player object to normal height
+    //     }
+    // }
 
     private void OnSprintInput(bool wantsToSprint)
     {
         // handle sprint action
-        if (wantsToSprint && _characterController.isGrounded && !_isCrouching)
+        if (wantsToSprint && _characterController.isGrounded)
         {
             // Set the sprint flag to true and increase the move speed
-            _isSprinting = true;
+            _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Sprinting);
         }
-        else if (!wantsToSprint && _isSprinting)
+        else if (!wantsToSprint && _playerMovementState.CurrentMovementState == PlayerMovementState.EPlayerMovementState.Sprinting)
         {
             // Reset the sprint flag to false and decrease the move speed
-            _isSprinting = false;
+            
+            // todo: needs to be set back to appropriate state
+            _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Idle);
+            
         }
     }
 }

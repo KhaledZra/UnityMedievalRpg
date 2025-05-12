@@ -2973,6 +2973,8 @@ GameObject:
   - component: {fileID: 8628802389566004788}
   - component: {fileID: 176787574561395575}
   - component: {fileID: 5515359706254391285}
+  - component: {fileID: 6163989161494538634}
+  - component: {fileID: 4576640898871356873}
   m_Layer: 0
   m_Name: Player_v2_tpc
   m_TagString: Untagged
@@ -3074,6 +3076,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d30cda1b9db75a24788a1a2c253179db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &6163989161494538634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5095494014328082273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31d29dffedc0cd241a31a3aed208f8f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <CurrentMovementState>k__BackingField: 0
+--- !u!114 &4576640898871356873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5095494014328082273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05ad0930a284cca48b5280abffcc1878, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animator: {fileID: 5607981225796198250}
+  _animationBlendSpeed: 6
 --- !u!1 &5098851023884237536
 GameObject:
   m_ObjectHideFlags: 0
