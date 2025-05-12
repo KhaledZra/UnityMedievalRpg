@@ -20,7 +20,7 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController _characterController;
     
     [SerializeField]
-    private Camera _cameraComponent;
+    private Transform _cameraTransform;
     
     // Player state variables
     private bool _isJumping;
@@ -66,8 +66,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void MovementUpdate()
     {
-        Vector3 cameraForwardXZ = new Vector3(_cameraComponent.transform.forward.x, 0f, _cameraComponent.transform.forward.z).normalized;
-        Vector3 cameraRightXZ = new Vector3(_cameraComponent.transform.right.x, 0f, _cameraComponent.transform.right.z).normalized;
+        Vector3 cameraForwardXZ = new Vector3(_cameraTransform.transform.forward.x, 0f, _cameraTransform.transform.forward.z).normalized;
+        Vector3 cameraRightXZ = new Vector3(_cameraTransform.transform.right.x, 0f, _cameraTransform.transform.right.z).normalized;
         Vector3 movementDirection = cameraRightXZ * 
             PlayerInputHandler.Instance.MovementInputValue.x + cameraForwardXZ * PlayerInputHandler.Instance.MovementInputValue.y;
 
@@ -112,19 +112,19 @@ public class PlayerMovement : MonoBehaviour
         }
     }
     
-    private void OnCrouchInput(bool WantsToCrouch)
+    private void OnCrouchInput(bool wantsToCrouch)
     {
         // handle crouch action
-        if (WantsToCrouch && !_isSprinting)
+        if (wantsToCrouch && !_isSprinting)
         {
             // Set the crouch flag to true and decrease the move speed
             _isCrouching = true;
             
             // shrink the player collider
-            _characterController.height = 0.5f; // Set the height of the character controller to crouch height
-            transform.localScale = new Vector3(1f, 0.5f, 1f); // Set the scale of the player object to crouch height
+            _characterController.height = 0.75f;
+            transform.localScale = new Vector3(1f, 0.5f, 1f);
         }
-        else if (!WantsToCrouch && _isCrouching)
+        else if (!wantsToCrouch && _isCrouching)
         {
             // Reset the crouch flag to false and increase the move speed
             _isCrouching = false;
@@ -135,15 +135,15 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void OnSprintInput(bool WantsToSprint)
+    private void OnSprintInput(bool wantsToSprint)
     {
         // handle sprint action
-        if (WantsToSprint && _characterController.isGrounded && !_isCrouching)
+        if (wantsToSprint && _characterController.isGrounded && !_isCrouching)
         {
             // Set the sprint flag to true and increase the move speed
             _isSprinting = true;
         }
-        else if (!WantsToSprint && _isSprinting)
+        else if (!wantsToSprint && _isSprinting)
         {
             // Reset the sprint flag to false and decrease the move speed
             _isSprinting = false;

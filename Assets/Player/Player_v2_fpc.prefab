@@ -3781,7 +3781,7 @@ GameObject:
   - component: {fileID: 446262083934632856}
   - component: {fileID: 7178531877479221850}
   m_Layer: 0
-  m_Name: Player_v2
+  m_Name: Player_v2_fpc
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3867,7 +3867,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _movementValues: {fileID: 11400000, guid: 286b651dfc703c246b2ee1cdcee1ad5a, type: 2}
   _characterController: {fileID: 512055237908417744}
-  _cameraComponent: {fileID: 3949464998170285928}
+  _cameraTransform: {fileID: 2096007954469386371}
   Velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &7178531877479221850
 MonoBehaviour:
