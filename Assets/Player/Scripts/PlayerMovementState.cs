@@ -11,6 +11,15 @@ public class PlayerMovementState : MonoBehaviour
         CurrentMovementState = newState;
     }
     
+    public bool InGroundState()
+    {
+        // todo: refactor this when a new ground state check is added
+        return CurrentMovementState == EPlayerMovementState.Idle ||
+               CurrentMovementState == EPlayerMovementState.Walking ||
+               CurrentMovementState == EPlayerMovementState.Running ||
+               CurrentMovementState == EPlayerMovementState.Strafing;
+    }
+    
     public enum EPlayerMovementState
     {
         Idle = 0,

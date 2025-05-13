@@ -73,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
         // todo: needs refactoring, it's pretty sensitive to the velocity so if we are moving quickly downhill it
         // todo: could be seen as falling or running up a hill quickly could be jumping!
         // todo: i think the fix is a better isGrounded check since current seems flaky
-        if (!_characterController.isGrounded && !IsBetween(_characterController.velocity.y, -2f, 2f)) // Not grounded
+        if (!_characterController.isGrounded) // Not grounded
         {
             if (_characterController.velocity.y < 0f) // Falling
             {
