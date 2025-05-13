@@ -3063,6 +3063,7 @@ MonoBehaviour:
   _movementValues: {fileID: 11400000, guid: 286b651dfc703c246b2ee1cdcee1ad5a, type: 2}
   _characterController: {fileID: 8628802389566004788}
   _cameraTransform: {fileID: 3851967015197629854}
+  _playerMovementState: {fileID: 6163989161494538634}
   Velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &5515359706254391285
 MonoBehaviour:
@@ -3103,6 +3104,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _animator: {fileID: 5607981225796198250}
   _animationBlendSpeed: 6
+  _playerMovementState: {fileID: 6163989161494538634}
 --- !u!1 &5098851023884237536
 GameObject:
   m_ObjectHideFlags: 0
