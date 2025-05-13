@@ -17,7 +17,8 @@ public class PlayerMovementState : MonoBehaviour
         return CurrentMovementState == EPlayerMovementState.Idle ||
                CurrentMovementState == EPlayerMovementState.Walking ||
                CurrentMovementState == EPlayerMovementState.Running ||
-               CurrentMovementState == EPlayerMovementState.Strafing;
+               CurrentMovementState == EPlayerMovementState.Strafing ||
+               CurrentMovementState == EPlayerMovementState.Sprinting;
     }
     
     public enum EPlayerMovementState

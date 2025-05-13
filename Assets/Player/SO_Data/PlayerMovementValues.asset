@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 469eb93a662d4d043bc0834dd6b6e32b, type: 3}
   m_Name: PlayerMovementValues
   m_EditorClassIdentifier: 
-  walkSpeed: 5
-  sprintSpeed: 10
+  walkSpeed: 4
+  sprintSpeed: 7
   crouchSpeed: 2
   jumpForce: 1
   gravityValue: -9.81
-  accelerationSpeed: 50
-  dragSpeed: 30
+  accelerationSpeed: 35
+  dragSpeed: 20
   _defaultWalkSpeed: 5
   _defaultSprintSpeed: 10
   _defaultCrouchSpeed: 2
