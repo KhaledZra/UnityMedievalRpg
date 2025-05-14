@@ -40,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    // for debugging
+    // TODO: for debugging
     [Header("Debugging")] [field: SerializeField]
     public Vector3 Velocity;
 
@@ -62,7 +62,7 @@ public class PlayerMovement : MonoBehaviour
     {
         UpdateIsGrounded();
         UpdateMovementState();
-        RBMovementUpdate();
+        MovementUpdate();
     }
 
     private void UpdateIsGrounded()
@@ -78,15 +78,8 @@ public class PlayerMovement : MonoBehaviour
         DebugExtension.DebugWireSphere(spherePosition, Color.red, _characterController.radius);
     }
 
-    private void RBMovementUpdate()
+    private void MovementUpdate()
     {
-        // Reset vertical velocity
-        if (_isGrounded && _verticalVelocity < 0f)
-        {
-            // Reset vertical velocity if grounded
-            _verticalVelocity = -2f;
-        }
-        
         // Store input values
         Vector3 targetPosition = new Vector3(
             PlayerInputHandler.Instance.MovementInputValue.x,
@@ -103,12 +96,10 @@ public class PlayerMovement : MonoBehaviour
 
         ApplyGravity();
         
-        // Apply gravity
-        _verticalVelocity += _movementValues.gravityValue * Time.deltaTime;
-        
         // Jump if state is active
         ApplyJump();
         
+        // Apply vertical velocity
         _targetMoveDirection.y = _verticalVelocity * Time.deltaTime;
         
         // Move the character controller
@@ -120,10 +111,16 @@ public class PlayerMovement : MonoBehaviour
 
     private void ApplyGravity()
     {
-        if (_isGrounded)
+        // TODO: maybe clamp gravity so we don't fall too fast?
+        // Reset vertical velocity
+        if (_characterController.isGrounded && _verticalVelocity < 0f)
         {
-            
+            // Reset vertical velocity if grounded
+            _verticalVelocity = -2f;
         }
+        
+        // Apply gravity
+        _verticalVelocity += _movementValues.gravityValue * Time.fixedDeltaTime;
     }
 
 
@@ -135,7 +132,7 @@ public class PlayerMovement : MonoBehaviour
         // todo: needs refactoring, it's pretty sensitive to the velocity so if we are moving quickly downhill it
         // todo: could be seen as falling or running up a hill quickly could be jumping!
         // todo: i think the fix is a better isGrounded check since current seems flaky
-        if (!_characterController.isGrounded) // Not grounded
+        if (!_isGrounded) // Not grounded
         {
             if (_characterController.velocity.y < 0f) // Falling
             {
@@ -169,38 +166,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void MovementUpdate()
-    {
-        Vector3 cameraForwardXZ =
-            new Vector3(_cameraTransform.transform.forward.x, 0f, _cameraTransform.transform.forward.z).normalized;
-        Vector3 cameraRightXZ = new Vector3(_cameraTransform.transform.right.x, 0f, _cameraTransform.transform.right.z)
-            .normalized;
-        Vector3 movementDirection = cameraRightXZ *
-                                    PlayerInputHandler.Instance.MovementInputValue.x +
-                                    cameraForwardXZ * PlayerInputHandler.Instance.MovementInputValue.y;
-
-        Vector3 movementDelta = movementDirection * _movementValues.accelerationSpeed * Time.deltaTime;
-        Vector3 newVelocity = _characterController.velocity + movementDelta;
-
-        // Add drag to player
-        Vector3 currentDrag = newVelocity.normalized * _movementValues.dragSpeed * Time.deltaTime;
-        newVelocity = (newVelocity.magnitude > _movementValues.dragSpeed * Time.deltaTime)
-            ? newVelocity - currentDrag
-            : Vector3.zero;
-        newVelocity = Vector3.ClampMagnitude(newVelocity, CurrentMoveSpeed);
-
-        // Apply gravity
-        newVelocity.y = _characterController.velocity.y + _movementValues.gravityValue * Time.deltaTime;
-
-        // Apply Jump if state is active
-        newVelocity.y += ApplyJump();
-
-        // Move character (Unity suggests only calling this once per tick)
-        _characterController.Move(newVelocity * Time.deltaTime);
-
-        Velocity = newVelocity;
-    }
-
     // todo: refactor
     private float ApplyJump()
     {
@@ -216,7 +181,7 @@ public class PlayerMovement : MonoBehaviour
     private void OnJumpInput()
     {
         // Handle jump input
-        if (_characterController.isGrounded)
+        if (_isGrounded && _characterController.isGrounded)
         {
             // Set the jump flag to true
             _wantsToJump = true;
@@ -226,7 +191,7 @@ public class PlayerMovement : MonoBehaviour
     private void OnSprintInput(bool wantsToSprint)
     {
         // handle sprint action
-        if (wantsToSprint && _characterController.isGrounded)
+        if (wantsToSprint && _isGrounded)
         {
             // Set the sprint flag to true and increase the move speed
             _wantsToSprint = true;
