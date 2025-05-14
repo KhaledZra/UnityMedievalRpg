@@ -32,6 +32,7 @@ public class PlayerAnimationHandler : MonoBehaviour
                          PlayerMovementState.EPlayerMovementState.Falling;
         bool isGrounded = _playerMovementState.InGroundState();
 
+        
 
         Vector2 inputTarget = isSprinting
             ? PlayerInputHandler.Instance.MovementInputValue * 1.5f
