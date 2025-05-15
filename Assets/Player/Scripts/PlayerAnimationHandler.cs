@@ -26,13 +26,10 @@ public class PlayerAnimationHandler : MonoBehaviour
     {
         bool isSprinting = _playerMovementState.CurrentMovementState ==
                            PlayerMovementState.EPlayerMovementState.Sprinting;
-        bool isJumping = _playerMovementState.CurrentMovementState ==
-                         PlayerMovementState.EPlayerMovementState.Jumping;
-        bool isFalling = _playerMovementState.CurrentMovementState ==
-                         PlayerMovementState.EPlayerMovementState.Falling;
+        bool isJumping = _playerMovementState.CurrentGroundState == PlayerMovementState.EPlayerGroundState.Jumping;
+        bool isFalling = _playerMovementState.CurrentGroundState == PlayerMovementState.EPlayerGroundState.Falling;
         bool isGrounded = _playerMovementState.InGroundState();
 
-        
 
         Vector2 inputTarget = isSprinting
             ? PlayerInputHandler.Instance.MovementInputValue * 1.5f

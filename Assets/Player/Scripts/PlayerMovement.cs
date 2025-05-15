@@ -18,13 +18,6 @@ public class PlayerMovement : MonoBehaviour
     // Player state variables
     [Header("Player State")] public PlayerMovementState _playerMovementState;
 
-    [SerializeField] private bool _isGrounded;
-    [SerializeField] private LayerMask _groundLayerMask;
-
-    // todo: move this to the PlayerMovementState class
-    private bool _wantsToSprint;
-    private bool _wantsToJump;
-
     private float _verticalVelocity;
     private Vector3 _targetMoveDirection = Vector3.zero;
 
@@ -60,22 +53,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        UpdateIsGrounded();
-        UpdateMovementState();
+        _playerMovementState.UpdateGroundState(_characterController, transform);
+        _playerMovementState.UpdateMovementState(PlayerInputHandler.Instance.MovementInputValue);
         MovementUpdate();
-    }
-
-    private void UpdateIsGrounded()
-    {
-        // check and update the isGrounded state
-        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - _characterController.radius,
-            transform.position.z);
-        
-        _isGrounded = Physics.CheckSphere(spherePosition, _characterController.radius,
-            _groundLayerMask, QueryTriggerInteraction.Ignore);
-        
-        // debug sphere
-        DebugExtension.DebugWireSphere(spherePosition, Color.red, _characterController.radius);
     }
 
     private void MovementUpdate()
@@ -122,85 +102,36 @@ public class PlayerMovement : MonoBehaviour
         // Apply gravity
         _verticalVelocity += _movementValues.gravityValue * Time.fixedDeltaTime;
     }
-
-
-    // todo: move this to the PlayerMovementState class
-    // todo: might switch to velocity based system in the future instead of input based
-    private void UpdateMovementState()
+    
+    private void ApplyJump()
     {
-        // Jump/Falling state check is based on the character controller velocity
-        // todo: needs refactoring, it's pretty sensitive to the velocity so if we are moving quickly downhill it
-        // todo: could be seen as falling or running up a hill quickly could be jumping!
-        // todo: i think the fix is a better isGrounded check since current seems flaky
-        if (!_isGrounded) // Not grounded
-        {
-            if (_characterController.velocity.y < 0f) // Falling
-            {
-                _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Falling);
-            }
-            else if (_characterController.velocity.y > 0f) // Jumping
-            {
-                _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Jumping);
-            }
-        }
-        // Player is not moving
-        else if (Vector2.Equals(PlayerInputHandler.Instance.MovementInputValue, Vector2.zero))
-        {
-            // Idle
-            _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Idle);
-        }
-        // Player is moving
-        else
-        {
-            // Check if the player is sprinting
-            if (_wantsToSprint)
-            {
-                // Sprinting
-                _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Sprinting);
-            }
-            else
-            {
-                // Walking
-                _playerMovementState.SetMovementState(PlayerMovementState.EPlayerMovementState.Walking);
-            }
-        }
-    }
-
-    // todo: refactor
-    private float ApplyJump()
-    {
-        if (_wantsToJump)
-        {
-            _wantsToJump = false;
-            _verticalVelocity = Mathf.Sqrt(_movementValues.jumpForce * -2.0f * _movementValues.gravityValue);
-        }
-
-        return 0f;
+        if (!_playerMovementState.WantsToJump) return;
+        
+        _verticalVelocity = Mathf.Sqrt(_movementValues.jumpForce * -2.0f * _movementValues.gravityValue);
+        // TODO: Testing to allow holding jump button
+        _playerMovementState.WantsToJump = false;
     }
 
     private void OnJumpInput()
     {
         // Handle jump input
-        if (_isGrounded && _characterController.isGrounded)
+        if (_playerMovementState.InGroundState() && _characterController.isGrounded)
         {
             // Set the jump flag to true
-            _wantsToJump = true;
+            _playerMovementState.WantsToJump = true;
         }
     }
 
     private void OnSprintInput(bool wantsToSprint)
     {
         // handle sprint action
-        if (wantsToSprint && _isGrounded)
+        if (wantsToSprint && _playerMovementState.InGroundState())
         {
-            // Set the sprint flag to true and increase the move speed
-            _wantsToSprint = true;
+            _playerMovementState.WantsToSprint = true;
         }
-        else if (!wantsToSprint && _playerMovementState.CurrentMovementState ==
-                 PlayerMovementState.EPlayerMovementState.Sprinting)
+        else
         {
-            // Reset the sprint flag to false and decrease the move speed
-            _wantsToSprint = false;
+            _playerMovementState.WantsToSprint = false;
         }
     }
 }
