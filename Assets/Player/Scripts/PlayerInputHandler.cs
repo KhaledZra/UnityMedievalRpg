@@ -16,7 +16,8 @@ public class PlayerInputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActi
     // Input action events
     public event Action JumpInputAction;
     public event Action<bool> SprintInputAction;
-    public event Action<bool> CrouchInputAction;
+    public event Action LeftAttackInputAction;
+    public event Action RightAttackInputAction;
 
     private void Awake()
     {
@@ -67,9 +68,20 @@ public class PlayerInputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActi
         LookInputValue = context.ReadValue<Vector2>();
     }
 
-    public void OnAttack(InputAction.CallbackContext context)
+    public void OnLeftAttack(InputAction.CallbackContext context)
     {
-        throw new System.NotImplementedException();
+        if (context.performed)
+        {
+            LeftAttackInputAction?.Invoke();
+        }
+    }
+    
+    public void OnRightAttack(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            RightAttackInputAction?.Invoke();
+        }
     }
 
     public void OnInteract(InputAction.CallbackContext context)
@@ -79,7 +91,7 @@ public class PlayerInputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActi
 
     public void OnCrouch(InputAction.CallbackContext context)
     {
-        CrouchInputAction?.Invoke(context.ReadValueAsButton());
+        // CrouchInputAction?.Invoke(context.ReadValueAsButton());
         
         // log crouch input
         Debug.Log($"Crouch Input: {context.ReadValueAsButton()}");

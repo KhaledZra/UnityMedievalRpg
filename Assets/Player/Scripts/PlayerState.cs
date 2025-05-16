@@ -1,12 +1,14 @@
 using UnityEngine;
 
-public class PlayerMovementState : MonoBehaviour
+public class PlayerState : MonoBehaviour
 {
     [Header("Player Movement State")]
     [field: SerializeField]
     public EPlayerMovementState CurrentMovementState { get; private set; } = EPlayerMovementState.Idle;
     [field: SerializeField]
     public EPlayerGroundState CurrentGroundState { get; private set; } = EPlayerGroundState.Grounded;
+    [field: SerializeField]
+    public EPlayerAttackState CurrentAttackState { get; private set; } = EPlayerAttackState.Idle;
     
     [Header("Requested States")]
     // Requested State variables
@@ -18,11 +20,11 @@ public class PlayerMovementState : MonoBehaviour
     [Header("Ground Layer Mask")]
     [SerializeField] private LayerMask _groundLayerMask;
     
-    // // Seems redundant unless we are adding some logic to the setter?
-    // public void SetMovementState(EPlayerMovementState newState)
-    // {
-    //     CurrentMovementState = newState;
-    // }
+    // Seems redundant unless we are adding some logic to the setter?
+    public void SetAttackState(EPlayerAttackState newState)
+    {
+        CurrentAttackState = newState;
+    }
 
     public void UpdateMovementState(Vector3 movementInput)
     {
@@ -92,5 +94,21 @@ public class PlayerMovementState : MonoBehaviour
         Grounded = 0,
         Jumping = 4,
         Falling = 5,
+    }
+    
+    public enum EPlayerAttackState
+    {
+        Idle = 0,
+        LeftPunching = 1,
+        RightPunching = 2
+    }
+    
+    // Called from animation events:
+    // "PunchLeft" animation clip
+    // "PunchRight" animation clip
+    public void OnEndAttack()
+    {
+        CurrentAttackState = EPlayerAttackState.Idle;
+        Debug.Log("Attack Animation Ended");
     }
 }

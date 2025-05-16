@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 // TODO: handle delayed input actions
 // TODO: Improve state machine to handle movement states better. keep sprinting and jumping separate from the movement state
@@ -16,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform _cameraTransform;
 
     // Player state variables
-    [Header("Player State")] public PlayerMovementState _playerMovementState;
+    [FormerlySerializedAs("_playerMovementState")] [Header("Player State")] public PlayerState PlayerState;
 
     private float _verticalVelocity;
     private Vector3 _targetMoveDirection = Vector3.zero;
@@ -26,7 +27,7 @@ public class PlayerMovement : MonoBehaviour
         get
         {
             // Determine the current move speed based on player state
-            if (_playerMovementState.CurrentMovementState == PlayerMovementState.EPlayerMovementState.Sprinting)
+            if (PlayerState.CurrentMovementState == PlayerState.EPlayerMovementState.Sprinting)
                 return _movementValues.sprintSpeed;
 
             return _movementValues.walkSpeed;
@@ -42,6 +43,8 @@ public class PlayerMovement : MonoBehaviour
         // Bind the input actions
         PlayerInputHandler.Instance.JumpInputAction += OnJumpInput;
         PlayerInputHandler.Instance.SprintInputAction += OnSprintInput;
+        PlayerInputHandler.Instance.LeftAttackInputAction += OnLeftAttackInput;
+        PlayerInputHandler.Instance.RightAttackInputAction += OnRightAttackInput;
     }
 
     private void OnDisable()
@@ -49,12 +52,14 @@ public class PlayerMovement : MonoBehaviour
         // Unbind the input actions
         PlayerInputHandler.Instance.JumpInputAction -= OnJumpInput;
         PlayerInputHandler.Instance.SprintInputAction -= OnSprintInput;
+        PlayerInputHandler.Instance.LeftAttackInputAction -= OnLeftAttackInput;
+        PlayerInputHandler.Instance.RightAttackInputAction -= OnRightAttackInput;
     }
 
     private void FixedUpdate()
     {
-        _playerMovementState.UpdateGroundState(_characterController, transform);
-        _playerMovementState.UpdateMovementState(PlayerInputHandler.Instance.MovementInputValue);
+        PlayerState.UpdateGroundState(_characterController, transform);
+        PlayerState.UpdateMovementState(PlayerInputHandler.Instance.MovementInputValue);
         MovementUpdate();
     }
 
@@ -105,33 +110,56 @@ public class PlayerMovement : MonoBehaviour
     
     private void ApplyJump()
     {
-        if (!_playerMovementState.WantsToJump) return;
+        if (!PlayerState.WantsToJump) return;
         
         _verticalVelocity = Mathf.Sqrt(_movementValues.jumpForce * -2.0f * _movementValues.gravityValue);
         // TODO: Testing to allow holding jump button
-        _playerMovementState.WantsToJump = false;
+        PlayerState.WantsToJump = false;
     }
 
     private void OnJumpInput()
     {
-        // Handle jump input
-        if (_playerMovementState.InGroundState() && _characterController.isGrounded)
-        {
-            // Set the jump flag to true
-            _playerMovementState.WantsToJump = true;
-        }
+        if (!PlayerState.InGroundState() && !_characterController.isGrounded)
+            return;
+        if (PlayerState.CurrentAttackState != PlayerState.EPlayerAttackState.Idle)
+            return;
+        
+        // Set the jump flag to true
+        PlayerState.WantsToJump = true;
     }
 
     private void OnSprintInput(bool wantsToSprint)
     {
         // handle sprint action
-        if (wantsToSprint && _playerMovementState.InGroundState())
+        if (wantsToSprint && PlayerState.InGroundState())
         {
-            _playerMovementState.WantsToSprint = true;
+            PlayerState.WantsToSprint = true;
         }
         else
         {
-            _playerMovementState.WantsToSprint = false;
+            PlayerState.WantsToSprint = false;
         }
+    }
+    
+    private void OnLeftAttackInput()
+    {
+        // Already attacking
+        if (PlayerState.CurrentAttackState != PlayerState.EPlayerAttackState.Idle ||
+            !PlayerState.InGroundState())
+            return;
+        
+        // Handle left attack input
+        PlayerState.SetAttackState(PlayerState.EPlayerAttackState.LeftPunching);
+    }
+    
+    private void OnRightAttackInput()
+    {
+        // Already attacking
+        if (PlayerState.CurrentAttackState != PlayerState.EPlayerAttackState.Idle ||
+            !PlayerState.InGroundState())
+            return;
+        
+        // Handle left attack input
+        PlayerState.SetAttackState(PlayerState.EPlayerAttackState.RightPunching);
     }
 }
