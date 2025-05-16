@@ -17,7 +17,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform _cameraTransform;
 
     // Player state variables
-    [FormerlySerializedAs("_playerMovementState")] [Header("Player State")] public PlayerState PlayerState;
+    [FormerlySerializedAs("_playerMovementState")] [Header("Player State")]
+    public PlayerState PlayerState;
 
     private float _verticalVelocity;
     private Vector3 _targetMoveDirection = Vector3.zero;
@@ -33,6 +34,14 @@ public class PlayerController : MonoBehaviour
             return _movementValues.walkSpeed;
         }
     }
+
+    // todo: attack values should be in a data object
+    [Header("Attacking")]
+    [SerializeField] private float _attackDistance = 100f;
+    [SerializeField] private float _attackDamage = 10f;
+    [SerializeField] private LayerMask _attackableLayerMask;
+    [SerializeField] private Transform _eyeHeightTransform;
+    [SerializeField] private Transform _mainRaycastCamera;
 
     // TODO: for debugging
     [Header("Debugging")] [field: SerializeField]
@@ -70,7 +79,7 @@ public class PlayerController : MonoBehaviour
             PlayerInputHandler.Instance.MovementInputValue.x,
             0,
             PlayerInputHandler.Instance.MovementInputValue.y);
-        
+
         // Apply speed
         targetPosition *= CurrentMoveSpeed * Time.deltaTime;
 
@@ -80,16 +89,16 @@ public class PlayerController : MonoBehaviour
         _targetMoveDirection = targetPosition;
 
         ApplyGravity();
-        
+
         // Jump if state is active
         ApplyJump();
-        
+
         // Apply vertical velocity
         _targetMoveDirection.y = _verticalVelocity * Time.deltaTime;
-        
+
         // Move the character controller
         _characterController.Move(_targetMoveDirection);
-        
+
         // Todo: debugging
         Velocity = PlayerInputHandler.Instance.MovementInputValue;
     }
@@ -103,15 +112,15 @@ public class PlayerController : MonoBehaviour
             // Reset vertical velocity if grounded
             _verticalVelocity = -2f;
         }
-        
+
         // Apply gravity
         _verticalVelocity += _movementValues.gravityValue * Time.fixedDeltaTime;
     }
-    
+
     private void ApplyJump()
     {
         if (!PlayerState.WantsToJump) return;
-        
+
         _verticalVelocity = Mathf.Sqrt(_movementValues.jumpForce * -2.0f * _movementValues.gravityValue);
         // TODO: Testing to allow holding jump button
         PlayerState.WantsToJump = false;
@@ -123,7 +132,7 @@ public class PlayerController : MonoBehaviour
             return;
         if (PlayerState.CurrentAttackState != PlayerState.EPlayerAttackState.Idle)
             return;
-        
+
         // Set the jump flag to true
         PlayerState.WantsToJump = true;
     }
@@ -140,26 +149,58 @@ public class PlayerController : MonoBehaviour
             PlayerState.WantsToSprint = false;
         }
     }
-    
+
+    // todo: left/right attack functions can be combined into one
+    // todo: also the cast attack needs to be used called on animation events so it feels more responsive.
     private void OnLeftAttackInput()
     {
         // Already attacking
         if (PlayerState.CurrentAttackState != PlayerState.EPlayerAttackState.Idle ||
             !PlayerState.InGroundState())
             return;
-        
+
         // Handle left attack input
         PlayerState.SetAttackState(PlayerState.EPlayerAttackState.LeftPunching);
+
+        bool result = RaycastAttack();
     }
-    
+
     private void OnRightAttackInput()
     {
         // Already attacking
         if (PlayerState.CurrentAttackState != PlayerState.EPlayerAttackState.Idle ||
             !PlayerState.InGroundState())
             return;
-        
+
         // Handle left attack input
         PlayerState.SetAttackState(PlayerState.EPlayerAttackState.RightPunching);
+
+        bool result = RaycastAttack();
+    }
+
+    private bool RaycastAttack()
+    {
+        // Does the ray intersect any objects excluding the player layer
+        if (Physics.Raycast(_mainRaycastCamera.position, _mainRaycastCamera.forward, out RaycastHit hit, _attackDistance,
+                _attackableLayerMask))
+        {
+            Debug.DrawRay(_mainRaycastCamera.position, _mainRaycastCamera.forward * hit.distance, Color.yellow, 10f);
+
+            // Checks if the hit point is behind the player
+            if (transform.InverseTransformPoint(hit.point).z < 0)
+            {
+                Debug.Log("Hit behind the player");
+                return false;
+            }
+            
+            Debug.Log("Did Hit");
+            return true;
+
+            // todo: notify hit target to act on the hit
+        }
+        
+        Debug.DrawRay(_mainRaycastCamera.position, _mainRaycastCamera.forward * _attackDistance, Color.white, 10f);
+        Debug.Log("Did not Hit");
+        return false;
     }
 }

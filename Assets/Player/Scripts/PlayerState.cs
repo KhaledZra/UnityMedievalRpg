@@ -109,6 +109,5 @@ public class PlayerState : MonoBehaviour
     public void OnEndAttack()
     {
         CurrentAttackState = EPlayerAttackState.Idle;
-        Debug.Log("Attack Animation Ended");
     }
 }
