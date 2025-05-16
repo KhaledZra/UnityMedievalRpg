@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 // TODO: handle delayed input actions
 // TODO: Improve state machine to handle movement states better. keep sprinting and jumping separate from the movement state
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     // Data Objects
     [Header("Data Objects")] [SerializeField]
