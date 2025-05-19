@@ -2977,7 +2977,7 @@ GameObject:
   - component: {fileID: 4576640898871356873}
   m_Layer: 0
   m_Name: Player_v2_tpc
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3041,13 +3041,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.4
+  m_Height: 1.8
+  m_Radius: 0.3
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.00001
-  m_Center: {x: 0, y: 1.08, z: 0}
+  m_SkinWidth: 0.0001
+  m_MinMoveDistance: 0.0001
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &176787574561395575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3063,7 +3063,13 @@ MonoBehaviour:
   _movementValues: {fileID: 11400000, guid: 286b651dfc703c246b2ee1cdcee1ad5a, type: 2}
   _characterController: {fileID: 8628802389566004788}
   _cameraTransform: {fileID: 3851967015197629854}
-  _playerMovementState: {fileID: 6163989161494538634}
+  PlayerState: {fileID: 6163989161494538634}
+  _attackDistance: 100
+  _attackDamage: 10
+  _attackableLayerMask:
+    serializedVersion: 2
+    m_Bits: 243
+  _mainRaycastCamera: {fileID: 6134722812973367174}
   Velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &5515359706254391285
 MonoBehaviour:
@@ -3090,6 +3096,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <CurrentMovementState>k__BackingField: 0
+  <CurrentGroundState>k__BackingField: 0
+  <CurrentAttackState>k__BackingField: 0
+  WantsToSprint: 0
+  WantsToJump: 0
+  _groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &4576640898871356873
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3104,7 +3117,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _animator: {fileID: 5607981225796198250}
   _animationBlendSpeed: 6
-  _playerMovementState: {fileID: 6163989161494538634}
+  _playerState: {fileID: 6163989161494538634}
 --- !u!1 &5098851023884237536
 GameObject:
   m_ObjectHideFlags: 0
@@ -5372,7 +5385,7 @@ Transform:
   m_GameObject: {fileID: 7922953165136648032}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 2.842171e-14, z: -0, w: -1}
-  m_LocalPosition: {x: 0, y: 0.3, z: -2}
+  m_LocalPosition: {x: 0.64, y: 0.29999995, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6107,7 +6120,7 @@ Transform:
   m_GameObject: {fileID: 8592925597879023043}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 2.842171e-14, z: -0, w: -1}
-  m_LocalPosition: {x: 0, y: 0.3, z: -2}
+  m_LocalPosition: {x: 0.64, y: 0.29999995, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6171,7 +6184,7 @@ MonoBehaviour:
   Damping: {x: 0.2, y: 0.5, z: 0.3}
   ShoulderOffset: {x: 0.8, y: 0.3, z: 0}
   VerticalArmLength: 0
-  CameraSide: 0.5
+  CameraSide: 0.9
   CameraDistance: 2
   AvoidObstacles:
     Enabled: 0
@@ -6195,7 +6208,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Composition:
-    ScreenPosition: {x: 0, y: 0}
+    ScreenPosition: {x: 0, y: 0.007229924}
     DeadZone:
       Enabled: 0
       Size: {x: 0.2, y: 0.2}

@@ -1,3 +1,5 @@
+using _Game.Interfaces;
+using _Game.Structs;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -37,10 +39,9 @@ public class PlayerController : MonoBehaviour
 
     // todo: attack values should be in a data object
     [Header("Attacking")]
-    [SerializeField] private float _attackDistance = 100f;
+    [SerializeField] private float _attackDistance = 10f;
     [SerializeField] private float _attackDamage = 10f;
     [SerializeField] private LayerMask _attackableLayerMask;
-    [SerializeField] private Transform _eyeHeightTransform;
     [SerializeField] private Transform _mainRaycastCamera;
 
     // TODO: for debugging
@@ -161,8 +162,6 @@ public class PlayerController : MonoBehaviour
 
         // Handle left attack input
         PlayerState.SetAttackState(PlayerState.EPlayerAttackState.LeftPunching);
-
-        bool result = RaycastAttack();
     }
 
     private void OnRightAttackInput()
@@ -174,20 +173,18 @@ public class PlayerController : MonoBehaviour
 
         // Handle left attack input
         PlayerState.SetAttackState(PlayerState.EPlayerAttackState.RightPunching);
-
-        bool result = RaycastAttack();
     }
 
-    private bool RaycastAttack()
+    private bool RaycastAttack(out RaycastHit raycastHit)
     {
         // Does the ray intersect any objects excluding the player layer
-        if (Physics.Raycast(_mainRaycastCamera.position, _mainRaycastCamera.forward, out RaycastHit hit, _attackDistance,
+        if (Physics.Raycast(_mainRaycastCamera.position, _mainRaycastCamera.forward, out raycastHit, _attackDistance,
                 _attackableLayerMask))
         {
-            Debug.DrawRay(_mainRaycastCamera.position, _mainRaycastCamera.forward * hit.distance, Color.yellow, 10f);
+            Debug.DrawRay(_mainRaycastCamera.position, _mainRaycastCamera.forward * raycastHit.distance, Color.yellow, 10f);
 
             // Checks if the hit point is behind the player
-            if (transform.InverseTransformPoint(hit.point).z < 0)
+            if (transform.InverseTransformPoint(raycastHit.point).z < 0)
             {
                 Debug.Log("Hit behind the player");
                 return false;
@@ -202,5 +199,32 @@ public class PlayerController : MonoBehaviour
         Debug.DrawRay(_mainRaycastCamera.position, _mainRaycastCamera.forward * _attackDistance, Color.white, 10f);
         Debug.Log("Did not Hit");
         return false;
+    }
+
+    // This is triggered when we want to start the attack raycast
+    // Called from animation events:
+    // "PunchLeft" animation clip
+    // "PunchRight" animation clip
+    public void OnAttackStart()
+    {
+        // If we have not hit result we simply return here
+        if (!RaycastAttack(out RaycastHit raycastHit)) return;
+        
+        // Check if the hit object has an IAttackable component
+        if (raycastHit.collider.gameObject.TryGetComponent(out IAttackable attackable))
+        {
+            // Create a hit result object
+            SHitResult hitResult = new()
+            {
+                Attacker = gameObject,
+                HitPoint = raycastHit.point,
+                Damage = _attackDamage,
+            };
+            attackable?.OnAttack(hitResult);
+        }
+        else
+        {
+            Debug.Log("No IAttackable component found on the hit object.");
+        }
     }
 }
