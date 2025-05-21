@@ -3064,7 +3064,7 @@ MonoBehaviour:
   _characterController: {fileID: 8628802389566004788}
   _cameraTransform: {fileID: 3851967015197629854}
   PlayerState: {fileID: 6163989161494538634}
-  _attackDistance: 100
+  _attackDistance: 5
   _attackDamage: 10
   _attackableLayerMask:
     serializedVersion: 2
