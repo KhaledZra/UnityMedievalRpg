@@ -25,35 +25,34 @@ public class CubeEnemy : MonoBehaviour, IAttackable
         SAttackResult attackResult = new() { TargetKilled = false };
 
         // Check if the attacker is a player
-        if (hitResult.Attacker.CompareTag("Player"))
+        if (!hitResult.Attacker.CompareTag("Player")) return attackResult;
+        
+        // Apply a force to the cube enemy in the direction of the hit point
+        Vector3 forceDirection = (hitResult.HitPoint - hitResult.Attacker.transform.position).normalized;
+
+        _rigidbody.AddForce(forceDirection * 10f, ForceMode.Impulse);
+            
+        // Apply damage to the cube enemy
+        _healthComponent.ApplyDamage(hitResult.Damage);
+            
+        // Check if the cube enemy is dead
+        if (_healthComponent.IsDead)
         {
-            // Apply a force to the cube enemy in the direction of the hit point
-            Vector3 forceDirection = (hitResult.HitPoint - hitResult.Attacker.transform.position).normalized;
-
-            _rigidbody.AddForce(forceDirection * 10f, ForceMode.Impulse);
-            
-            // Apply damage to the cube enemy
-            _healthComponent.ApplyDamage(hitResult.Damage);
-            
-            // Check if the cube enemy is dead
-            if (_healthComponent.IsDead)
-            {
-                // Handle the death of the cube enemy
-                attackResult.TargetKilled = true;
+            // Handle the death of the cube enemy
+            attackResult.TargetKilled = true;
                 
-                Debug.Log("Cube enemy killed!");
+            Debug.Log("Cube enemy killed!");
 
                 
-                // Play floating at location instead
-                _floatingTextHandler.SpawnFloatingTextPosition(hitResult.Damage, Color.red, transform.position);
+            // Play floating at location instead
+            _floatingTextHandler.SpawnFloatingTextPosition(hitResult.Damage, Color.red, transform.position);
                 
-                Destroy(_baseGameObject ? _baseGameObject : gameObject);
-            }
-            else
-            {
-                // Show floating text for damage taken
-                _floatingTextHandler.SpawnFloatingText(hitResult.Damage, Color.red, transform);
-            }
+            Destroy(_baseGameObject ? _baseGameObject : gameObject);
+        }
+        else
+        {
+            // Show floating text for damage taken
+            _floatingTextHandler.SpawnFloatingText(hitResult.Damage, Color.red, transform);
         }
 
         return attackResult;
