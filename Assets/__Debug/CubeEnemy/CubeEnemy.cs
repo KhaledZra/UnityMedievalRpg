@@ -4,10 +4,12 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(HealthComponent))]
+[RequireComponent(typeof(FloatingTextHandler))]
 public class CubeEnemy : MonoBehaviour, IAttackable
 {
     private Rigidbody _rigidbody;
     private HealthComponent _healthComponent;
+    private FloatingTextHandler _floatingTextHandler;
     
     [SerializeField] private GameObject _baseGameObject;
 
@@ -15,6 +17,7 @@ public class CubeEnemy : MonoBehaviour, IAttackable
     {
         _rigidbody = GetComponent<Rigidbody>();
         _healthComponent = GetComponent<HealthComponent>();
+        _floatingTextHandler = GetComponent<FloatingTextHandler>();
     }
 
     public SAttackResult OnAttack(SHitResult hitResult)
@@ -40,7 +43,16 @@ public class CubeEnemy : MonoBehaviour, IAttackable
                 
                 Debug.Log("Cube enemy killed!");
 
+                
+                // Play floating at location instead
+                _floatingTextHandler.SpawnFloatingTextPosition((int)hitResult.Damage, Color.red, transform.position);
+                
                 Destroy(_baseGameObject ? _baseGameObject : gameObject);
+            }
+            else
+            {
+                // Show floating text for damage taken
+                _floatingTextHandler.SpawnFloatingText((int)hitResult.Damage, Color.red, transform);
             }
         }
 
