@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class HealthComponent : MonoBehaviour
 {
-    [SerializeField] private float _maxHealth = 40f;
+    [SerializeField] private HealthValues _healthValues;
     [SerializeField] private float _currentHealth;
     
     [SerializeField] private HealthbarUIComponent _healthBarUI;
@@ -12,11 +12,11 @@ public class HealthComponent : MonoBehaviour
 
     private void Start()
     {
-        _currentHealth = _maxHealth;
+        _currentHealth = _healthValues.maxHealth;
         
         // Initialize the healthbar UI
         _healthBarUI?.SetVisible(false);
-        _healthBarUI?.UpdateHealthBar(_currentHealth, _maxHealth);
+        _healthBarUI?.UpdateHealthBar(_currentHealth, _healthValues.maxHealth);
         
     }
 
@@ -32,6 +32,6 @@ public class HealthComponent : MonoBehaviour
         
         // Update the healthbar UI if it's attached
         _healthBarUI?.SetVisible(true); // Show the health bar when taking damage
-        _healthBarUI?.UpdateHealthBar(_currentHealth, _maxHealth);
+        _healthBarUI?.UpdateHealthBar(_currentHealth, _healthValues.maxHealth);
     }
 }
