@@ -45,14 +45,14 @@ public class CubeEnemy : MonoBehaviour, IAttackable
 
                 
                 // Play floating at location instead
-                _floatingTextHandler.SpawnFloatingTextPosition((int)hitResult.Damage, Color.red, transform.position);
+                _floatingTextHandler.SpawnFloatingTextPosition(hitResult.Damage, Color.red, transform.position);
                 
                 Destroy(_baseGameObject ? _baseGameObject : gameObject);
             }
             else
             {
                 // Show floating text for damage taken
-                _floatingTextHandler.SpawnFloatingText((int)hitResult.Damage, Color.red, transform);
+                _floatingTextHandler.SpawnFloatingText(hitResult.Damage, Color.red, transform);
             }
         }
 

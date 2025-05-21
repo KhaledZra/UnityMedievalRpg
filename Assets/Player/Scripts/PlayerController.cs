@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
     // todo: attack values should be in a data object
     [Header("Attacking")]
     [SerializeField] private float _attackDistance = 10f;
-    [SerializeField] private float _attackDamage = 10f;
+    [SerializeField] private int _attackDamage = 10;
     [SerializeField] private LayerMask _attackableLayerMask;
     [SerializeField] private Transform _mainRaycastCamera;
 
