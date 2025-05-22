@@ -7,17 +7,17 @@ public class FloatingText : MonoBehaviour
 {
     [SerializeField] private GameObject _parent;
     [SerializeField] private TextMeshPro _textMeshPro;
-    [SerializeField] private Animator _animator;
+    [SerializeField] private Animation _animation;
     
     private Vector3 _targetPosition;
     
-    private void Awake()
+    private void Start()
     {
-        if (_animator == null) return;
-        if (_animator.runtimeAnimatorController.animationClips.Length == 0) return;
+        if (_animation == null) return;
+        if (_animation.clip == null) return;
         
         // Get the original clip from the animator
-        AnimationClip originalClip = _animator.runtimeAnimatorController.animationClips[0];
+        AnimationClip originalClip = _animation.clip;
 
         // Create a unique instance of the original clip
         AnimationClip uniqueClip = Instantiate(originalClip);
@@ -30,13 +30,10 @@ public class FloatingText : MonoBehaviour
         );
         
         uniqueClip.SetCurve("", typeof(RectTransform), "m_AnchoredPosition.x", curve);
-
-        // Replace original clip with the unique one
-        AnimatorOverrideController overrideController = new AnimatorOverrideController(_animator.runtimeAnimatorController);
-        overrideController[originalClip.name] = uniqueClip;
-
-        // Apply new override controller
-        _animator.runtimeAnimatorController = overrideController;
+        
+        _animation.RemoveClip(originalClip);
+        _animation.AddClip(uniqueClip, uniqueClip.name);
+        _animation.Play(uniqueClip.name);
     }
     
     public void Initialize(int damage, Color color, Vector3 targetPosition)
