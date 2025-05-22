@@ -47,6 +47,9 @@ public class PlayerState : MonoBehaviour
         Vector3 spherePosition = new Vector3(playerTransform.position.x, playerTransform.position.y - characterController.radius,
             playerTransform.position.z);
         
+        // Lift the spherePosition slightly above the ground to avoid false positives
+        spherePosition.y += characterController.radius * 0.5f;
+        
         bool isGrounded = Physics.CheckSphere(spherePosition, characterController.radius,
             _groundLayerMask, QueryTriggerInteraction.Ignore);
         

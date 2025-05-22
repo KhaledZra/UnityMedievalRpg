@@ -34,6 +34,10 @@ public class FocusTargetComponent : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        _startFocus = false;
+        if (other.CompareTag(_targetTag))
+        {
+            _startFocus = false;
+            _targetTransform = null;
+        }
     }
 }

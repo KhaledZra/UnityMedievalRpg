@@ -3066,6 +3066,7 @@ MonoBehaviour:
   PlayerState: {fileID: 6163989161494538634}
   _attackDistance: 5
   _attackDamage: 10
+  _attackForce: 2
   _attackableLayerMask:
     serializedVersion: 2
     m_Bits: 243
@@ -5371,7 +5372,7 @@ GameObject:
   - component: {fileID: 8434762075211714177}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5385,7 +5386,7 @@ Transform:
   m_GameObject: {fileID: 7922953165136648032}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 2.842171e-14, z: -0, w: -1}
-  m_LocalPosition: {x: 0.64, y: 0.29999995, z: -2}
+  m_LocalPosition: {x: 0.64001465, y: 0.3000002, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

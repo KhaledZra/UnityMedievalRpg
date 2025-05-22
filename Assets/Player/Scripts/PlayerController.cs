@@ -1,3 +1,4 @@
+using System;
 using _Game.Interfaces;
 using _Game.Structs;
 using UnityEngine;
@@ -41,21 +42,20 @@ public class PlayerController : MonoBehaviour
     [Header("Attacking")]
     [SerializeField] private float _attackDistance = 10f;
     [SerializeField] private int _attackDamage = 10;
+    [SerializeField] private int _attackForce = 2;
     [SerializeField] private LayerMask _attackableLayerMask;
     [SerializeField] private Transform _mainRaycastCamera;
 
     // TODO: for debugging
     [Header("Debugging")] [field: SerializeField]
     public Vector3 Velocity;
+    
+    private bool _inputsInitialized;
 
-    private void OnEnable()
-    {
-        // Bind the input actions
-        PlayerInputHandler.Instance.JumpInputAction += OnJumpInput;
-        PlayerInputHandler.Instance.SprintInputAction += OnSprintInput;
-        PlayerInputHandler.Instance.LeftAttackInputAction += OnLeftAttackInput;
-        PlayerInputHandler.Instance.RightAttackInputAction += OnRightAttackInput;
-    }
+    // Reason for this is for some odd reason the PlayerInputHandler instance is null on some stages
+    private void OnEnable() => SubscribeInputEvents();
+    private void Awake() => SubscribeInputEvents();
+    private void Start() => SubscribeInputEvents();
 
     private void OnDisable()
     {
@@ -64,6 +64,8 @@ public class PlayerController : MonoBehaviour
         PlayerInputHandler.Instance.SprintInputAction -= OnSprintInput;
         PlayerInputHandler.Instance.LeftAttackInputAction -= OnLeftAttackInput;
         PlayerInputHandler.Instance.RightAttackInputAction -= OnRightAttackInput;
+        
+        _inputsInitialized = false;
     }
 
     private void FixedUpdate()
@@ -219,6 +221,7 @@ public class PlayerController : MonoBehaviour
                 Attacker = gameObject,
                 HitPoint = raycastHit.point,
                 Damage = _attackDamage,
+                HitForce = _attackForce,
             };
             attackable?.OnAttack(hitResult);
         }
@@ -226,5 +229,24 @@ public class PlayerController : MonoBehaviour
         {
             Debug.Log("No IAttackable component found on the hit object.");
         }
+    }
+    
+    private void SubscribeInputEvents()
+    {
+        // Check if inputs are already initialized
+        if (_inputsInitialized) return;
+        if (PlayerInputHandler.Instance == null) return;
+        {
+            Debug.LogError("PlayerInputHandler instance is null. Cannot subscribe to input events.");
+        }
+
+        // Bind the input actions
+        PlayerInputHandler.Instance.JumpInputAction += OnJumpInput;
+        PlayerInputHandler.Instance.SprintInputAction += OnSprintInput;
+        PlayerInputHandler.Instance.LeftAttackInputAction += OnLeftAttackInput;
+        PlayerInputHandler.Instance.RightAttackInputAction += OnRightAttackInput;
+        
+        // Set inputs initialized to true
+        _inputsInitialized = true;
     }
 }
