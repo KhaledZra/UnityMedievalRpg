@@ -13,7 +13,6 @@ public class FocusTargetComponent : MonoBehaviour
     void Update()
     {
         if (!_startFocus) return;
-        if (_currentTransform && _targetTransform == null) return;
         
         // Update the rotation to face the target only on y axis
         Vector3 direction = _targetTransform.position - _currentTransform.position;
@@ -25,19 +24,19 @@ public class FocusTargetComponent : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag(_targetTag))
-        {
-            _startFocus = true;
-            _targetTransform = other.transform;
-        }
+        if (!other.CompareTag(_targetTag)) return;
+        if (!_currentTransform) return;
+        
+        _startFocus = true;
+        _targetTransform = other.transform;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag(_targetTag))
-        {
-            _startFocus = false;
-            _targetTransform = null;
-        }
+        if (!_startFocus) return;
+        if (!other.CompareTag(_targetTag)) return;
+        
+        _startFocus = false;
+        _targetTransform = null;
     }
 }
