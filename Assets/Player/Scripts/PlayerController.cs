@@ -237,7 +237,7 @@ public class PlayerController : MonoBehaviour
         if (_inputsInitialized) return;
         if (PlayerInputHandler.Instance == null) return;
         {
-            Debug.LogError("PlayerInputHandler instance is null. Cannot subscribe to input events.");
+            Debug.LogWarning("PlayerInputHandler instance is null. Cannot subscribe to input events.");
         }
 
         // Bind the input actions
