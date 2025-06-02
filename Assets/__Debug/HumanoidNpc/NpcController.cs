@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using Khaled.MathLib;
 using NaughtyAttributes;
 using UnityEngine;
@@ -14,17 +16,17 @@ public class NpcController : MonoBehaviour
     private Animator _animator;
     private Rigidbody _rigidbody;
 
-    [Header("Movement Settings")] 
-    [SerializeField] private bool _isWalking;
+    [Header("Movement Settings")] [SerializeField]
+    private bool _isWalking;
 
-    [Header("Patrol Settings")] [SerializeField]
-    private bool _enablePatrolling;
-
+    [Header("Patrol Settings")] 
+    [SerializeField] private bool _enablePatrolling;
+    [SerializeField] private bool _enableWaiting;
+    [SerializeField] private float _waitTime;
     [SerializeField] private PatrolPoint[] _patrolPoints;
     [SerializeField, ReadOnly] private int _currentPatrolIndex = 0;
 
-    [Header("Debugging")] 
-    [SerializeField] private Transform _agentDestinationTransform;
+    [Header("Debugging")] [SerializeField] private Transform _agentDestinationTransform;
     [SerializeField] private Vector3 _velocity;
     [SerializeField] private float _velocityNormalizedMagnitude;
 
@@ -93,6 +95,20 @@ public class NpcController : MonoBehaviour
         }
 
         // Move to the next patrol point
+        if (_enableWaiting)
+        {
+            Debug.LogWarning(_waitTime);
+            StartCoroutine(WaitOnMoveTo());
+        }
+        else
+        {
+            MoveTo(_patrolPoints[_currentPatrolIndex].transform.position);
+        }
+    }
+
+    private IEnumerator WaitOnMoveTo()
+    {
+        yield return new WaitForSeconds(_waitTime);
         MoveTo(_patrolPoints[_currentPatrolIndex].transform.position);
     }
 
@@ -111,8 +127,10 @@ public class NpcController : MonoBehaviour
         {
             _currentPatrolIndex++; // Move to the next patrol point
         }
-        
+
         // Continue patrolling
+        // todo: add couritine and bool check for enableWaiting & waitTime
+
         ContinuePatrol();
     }
 
