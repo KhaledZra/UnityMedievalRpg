@@ -129,14 +129,12 @@ public class NpcController : MonoBehaviour
         }
 
         // Continue patrolling
-        // todo: add couritine and bool check for enableWaiting & waitTime
-
         ContinuePatrol();
     }
 
     private void MoveTo(Vector3 destination)
     {
-        if (_navMeshAgent == null) return;
+        if (!_navMeshAgent) return;
 
         _navMeshAgent.SetDestination(destination);
     }
