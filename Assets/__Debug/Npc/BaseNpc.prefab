@@ -485,12 +485,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isWalking: 0
-  _enablePatrolling: 1
+  _enableWaiting: 0
+  _waitTime: 0
   _patrolPoints:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   _currentPatrolIndex: 0
+  _npcAiState: 0
+  _lastActiveNpcAiState: 0
+  _randomPatrolDistance: 10
+  _randomPatrolDestination: {x: 0, y: 0, z: 0}
+  _randomPatrolPointPrefab: {fileID: 7593919742974516957, guid: 2c1ca6baf7507f740ab2ec2a9d8a2a8c, type: 3}
+  _randomPatrolPoint: {fileID: 0}
   _agentDestinationTransform: {fileID: 0}
   _velocity: {x: 0, y: 0, z: 0}
   _velocityNormalizedMagnitude: 0
