@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Khaled.MathLib;
 using NaughtyAttributes;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
@@ -47,9 +48,15 @@ public class NpcController : MonoBehaviour
     [SerializeField, ReadOnly] private GameObject _activeRandomPatrolPoint;
     
     [Space]
+    [Header("Follow Target")]
+    [SerializeField] private float _followTargetStopDistance = 3f;
+    [SerializeField] private Transform _followTargetTransform;
+    
+    [Space]
     [Header("--  Debugging  --")] [SerializeField] private Transform _agentDestinationTransform;
     [SerializeField] private Vector3 _velocity;
     [SerializeField] private float _velocityNormalizedMagnitude;
+    [SerializeField] private TextMeshPro _stateText;
     
     private enum ENpcAiState
     {
@@ -83,6 +90,9 @@ public class NpcController : MonoBehaviour
             _patrolCoroutine = null;
         }
         
+        // To be safe since it's changes in specific states.
+        _navMeshAgent.stoppingDistance = 0f;
+        
         switch (_npcAiState)
         {
             case ENpcAiState.Idle: break; // Currently does nothing
@@ -93,10 +103,16 @@ public class NpcController : MonoBehaviour
                 _patrolCoroutine = StartCoroutine(ContinueRandomPatrol()); 
                 break;
             case ENpcAiState.FollowTarget:
-                // todo: follow function call here!
+                _patrolCoroutine = StartCoroutine(ContinueFollowTarget());
                 break;
             
             default: throw new ArgumentOutOfRangeException();
+        }
+        
+        // Update the state text for debugging
+        if (_stateText)
+        {
+            _stateText.text = _npcAiState.ToString();
         }
     }
 
@@ -120,6 +136,21 @@ public class NpcController : MonoBehaviour
         
         MoveTo(_randomPatrolDestination);
     }
+    
+    private IEnumerator ContinueFollowTarget()
+    {
+        if (_npcAiState != ENpcAiState.FollowTarget) yield break;
+        if (!_followTargetTransform) yield break;
+        
+        _navMeshAgent.stoppingDistance = _followTargetStopDistance;
+        
+        MoveTo(_followTargetTransform.position);
+        // Wait for a short duration before checking again for the updated target location
+        yield return new WaitForSeconds(0.5f);
+        
+        // Basically a loop to keep following the target
+        TriggerCurrentAiState();
+    }
 
     // Update is called once per frame
     void Update()
@@ -135,7 +166,7 @@ public class NpcController : MonoBehaviour
     }
 
     
-    // Refactor to NpcAnimationHandler.cs
+    // todo: Refactor to NpcAnimationHandler.cs
     private void UpdateAnimator()
     {
         if (!_velocityNormalizedMagnitude.Equals(0f))
@@ -183,6 +214,10 @@ public class NpcController : MonoBehaviour
     // This method should be called when the agent reaches a patrol point
     public void OnPatrolPointReached(PatrolPoint patrolPoint)
     {
+        // Check if the current index is out of bounds
+        if (_currentPatrolIndex < 0 || _currentPatrolIndex >= _patrolPoints.Length) return;
+        // Simple null check to ensure the patrol point exists
+        if (_patrolPoints[_currentPatrolIndex] == null) return;
         // Check if the patrol point is the one we are currently targeting
         if (_patrolPoints[_currentPatrolIndex] != patrolPoint) return;
 
