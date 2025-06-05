@@ -6,10 +6,12 @@ public class NpcMovementValues : ScriptableObject
 {
     public float walkSpeed; // Speed when walking
     public float runSpeed; // Speed when running
+    public float sprintSpeed; // Speed when running
     
     // Saved values
     [ReadOnly, SerializeField] private float _defaultWalkSpeed = 2.5f;
     [ReadOnly, SerializeField] private float _defaultRunSpeed = 5f;
+    [ReadOnly, SerializeField] private float _defaultSprintSpeed = 7.5f;
     
     private void OnEnable()
     {
@@ -22,6 +24,7 @@ public class NpcMovementValues : ScriptableObject
         // Set default values for the movement parameters
         walkSpeed = _defaultWalkSpeed;
         runSpeed = _defaultRunSpeed;
+        sprintSpeed = _defaultSprintSpeed;
     }
     
     [Button]
@@ -30,5 +33,6 @@ public class NpcMovementValues : ScriptableObject
         // Save the current values to the scriptable object
         _defaultWalkSpeed = walkSpeed;
         _defaultRunSpeed = runSpeed;
+        _defaultSprintSpeed = sprintSpeed;
     }
 }

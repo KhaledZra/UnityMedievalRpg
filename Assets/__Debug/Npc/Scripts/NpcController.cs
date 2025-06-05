@@ -31,6 +31,7 @@ public class NpcController : MonoBehaviour
         Stationary = 0,
         Walking = 1,
         Running = 2,
+        Sprinting = 3,
     }
     
     [Header("Movement Values")]
@@ -176,8 +177,32 @@ public class NpcController : MonoBehaviour
         // Wait for a short duration before checking again for the updated target location
         yield return new WaitForSeconds(0.5f);
         
+        // Update the speed based on the distance to the target
+        UpdateSpeedBasedOnDistance();
+
         // Basically a loop to keep following the target
         TriggerCurrentAiState();
+    }
+
+    private void UpdateSpeedBasedOnDistance()
+    {
+        // Base the movement speed on the distance to the target
+        float distanceToTarget = Vector3.Distance(transform.position, _followTargetTransform.position);
+
+        Debug.Log(distanceToTarget);
+        
+        if (distanceToTarget < 4f)
+        {
+            ChangeMovementSpeed(ENpcMovementStates.Walking); // Walk towards the target
+        }
+        else if (distanceToTarget < 6f)
+        {
+            ChangeMovementSpeed(ENpcMovementStates.Running); // Sprint towards the target
+        }
+        else
+        {
+            ChangeMovementSpeed(ENpcMovementStates.Sprinting); // Sprint towards the target
+        }
     }
 
     private void ChangeMovementSpeed(ENpcMovementStates newState)
@@ -190,6 +215,7 @@ public class NpcController : MonoBehaviour
             ENpcMovementStates.Stationary => 0f,
             ENpcMovementStates.Walking => _npcMovementValues.walkSpeed,
             ENpcMovementStates.Running => _npcMovementValues.runSpeed,
+            ENpcMovementStates.Sprinting => _npcMovementValues.sprintSpeed,
             _ => throw new ArgumentOutOfRangeException()
         };
         
@@ -321,9 +347,7 @@ public class NpcController : MonoBehaviour
            
         randomDirection += origin;
            
-        NavMeshHit navHit;
-           
-        NavMesh.SamplePosition (randomDirection, out navHit, distance, layermask);
+        NavMesh.SamplePosition (randomDirection, out NavMeshHit navHit, distance, layermask);
            
         return navHit.position;
     }
