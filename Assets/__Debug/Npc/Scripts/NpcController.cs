@@ -9,18 +9,37 @@ using UnityEngine.Serialization;
 
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(NavMeshAgent))]
-[RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(NpcAnimationController))]
 public class NpcController : MonoBehaviour
 {
     private CapsuleCollider _capsuleCollider;
     private NavMeshAgent _navMeshAgent;
-    private Animator _animator;
     private Rigidbody _rigidbody;
+    private NpcAnimationController _animationController;
+    
+    private enum ENpcAiState
+    {
+        Idle = 0,
+        FollowPatrolPoints = 1,
+        FollowRandomPatrol = 2,
+        FollowTarget = 3,
+    }
+    
+    public enum ENpcMovementStates
+    {
+        Stationary = 0,
+        Walking = 1,
+        Running = 2,
+    }
+    
+    [Header("Movement Values")]
+    [SerializeField]
+    private NpcMovementValues _npcMovementValues;
 
-    // todo: move to NpcAnimationHandler.cs
-    // [Header("Movement Settings")]
-    private bool _isWalking;
+    [SerializeField] private ENpcMovementStates _startMoveState = ENpcMovementStates.Running;
+    [SerializeField, ReadOnly] private ENpcMovementStates _activeMoveState = ENpcMovementStates.Running;
+
 
     [Header("Patrol Settings")]
     // General coroutine used for patrolling
@@ -53,18 +72,11 @@ public class NpcController : MonoBehaviour
     [SerializeField] private Transform _followTargetTransform;
     
     [Space]
-    [Header("--  Debugging  --")] [SerializeField] private Transform _agentDestinationTransform;
+    [Header("--  Debugging  --")] 
+    [SerializeField] private Transform _agentDestinationTransform;
     [SerializeField] private Vector3 _velocity;
     [SerializeField] private float _velocityNormalizedMagnitude;
     [SerializeField] private TextMeshPro _stateText;
-    
-    private enum ENpcAiState
-    {
-        Idle = 0,
-        FollowPatrolPoints = 1,
-        FollowRandomPatrol = 2,
-        FollowTarget = 3,
-    }
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -72,13 +84,15 @@ public class NpcController : MonoBehaviour
     {
         _capsuleCollider = GetComponent<CapsuleCollider>();
         _navMeshAgent = GetComponent<NavMeshAgent>();
-        _animator = GetComponent<Animator>();
         _rigidbody = GetComponent<Rigidbody>();
+        _animationController = GetComponent<NpcAnimationController>();
     }
 
     private void Start()
     {
+        _activeMoveState = _startMoveState;
         TriggerCurrentAiState();
+        ChangeMovementSpeed(_startMoveState);
     }
 
     private void TriggerCurrentAiState()
@@ -160,34 +174,26 @@ public class NpcController : MonoBehaviour
         _velocityNormalizedMagnitude = KMath.Normalize(
             KMath.Magnitude(_velocity),
             0f,
-            _navMeshAgent.speed);
-
-        UpdateAnimator();
+            _npcMovementValues.runSpeed);
+        
+        // Update the movement state based on the normalized velocity magnitude
+        _animationController.UpdateAnimator(_velocityNormalizedMagnitude);
     }
 
-    
-    // todo: Refactor to NpcAnimationHandler.cs
-    private void UpdateAnimator()
+    private void ChangeMovementSpeed(ENpcMovementStates newState)
     {
-        if (!_velocityNormalizedMagnitude.Equals(0f))
+        if (!_npcMovementValues) return;
+        if (!_navMeshAgent) return;
+
+        _navMeshAgent.speed = newState switch
         {
-            _animator.SetBool("IsMoving", true);
-            // this is mostly for testing. I need to find a walk animation to change to it instead and add states
-            if (_isWalking)
-            {
-                _animator.SetFloat("AnimationSpeed", _velocityNormalizedMagnitude * 0.5f);
-                _navMeshAgent.speed = 2.5f;
-            }
-            else
-            {
-                _animator.SetFloat("AnimationSpeed", _velocityNormalizedMagnitude);
-                _navMeshAgent.speed = 5f;
-            }
-        }
-        else
-        {
-            _animator.SetBool("IsMoving", false);
-        }
+            ENpcMovementStates.Stationary => 0f,
+            ENpcMovementStates.Walking => _npcMovementValues.walkSpeed,
+            ENpcMovementStates.Running => _npcMovementValues.runSpeed,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        
+        _activeMoveState = newState; // Update the active movement state
     }
 
     private IEnumerator ContinuePointPatrol()
@@ -261,7 +267,7 @@ public class NpcController : MonoBehaviour
     [Button]
     private void DebugMoveToTarget()
     {
-        if (_agentDestinationTransform == null) return;
+        if (!_agentDestinationTransform) return;
 
         MoveTo(_agentDestinationTransform.position);
     }
@@ -290,6 +296,24 @@ public class NpcController : MonoBehaviour
         if (_npcAiState == _lastActiveNpcAiState) return; // No need to resume if already in the last state
         _npcAiState = _lastActiveNpcAiState; // Restore the last AI state
         TriggerCurrentAiState();
+    }
+    
+    [Button]
+    private void DebugEnableRunning()
+    {
+        // Update state and agent speed
+        if (!_npcMovementValues) return;
+        if (!_navMeshAgent) return;
+        ChangeMovementSpeed(ENpcMovementStates.Running);
+    }
+    
+    [Button]
+    private void DebugEnableWalking()
+    {
+        // Update state and agent speed
+        if (!_npcMovementValues) return;
+        if (!_navMeshAgent) return;
+        ChangeMovementSpeed(ENpcMovementStates.Walking);
     }
     
     private Vector3 RandomNavSphere(Vector3 origin, float distance, int layermask) {

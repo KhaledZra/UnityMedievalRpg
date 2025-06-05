@@ -402,6 +402,7 @@ GameObject:
   - component: {fileID: 2369850330158835534}
   - component: {fileID: 8606923169552922012}
   - component: {fileID: 2640397669592305111}
+  - component: {fileID: 5974540588067552538}
   m_Layer: 0
   m_Name: BaseNpc
   m_TagString: NPC
@@ -485,6 +486,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9eab7f97c977f434ab1810cc039fe10b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _npcMovementValues: {fileID: 11400000, guid: 3f59a71ed9591b24882c185c79412ad8, type: 2}
+  _startMoveState: 2
+  _activeMoveState: 2
   _enableWaiting: 0
   _waitTime: 0
   _patrolPoints: []
@@ -495,6 +499,8 @@ MonoBehaviour:
   _randomPatrolDestination: {x: 0, y: 0, z: 0}
   _randomPatrolPointPrefab: {fileID: 7593919742974516957, guid: 2c1ca6baf7507f740ab2ec2a9d8a2a8c, type: 3}
   _activeRandomPatrolPoint: {fileID: 0}
+  _followTargetStopDistance: 3
+  _followTargetTransform: {fileID: 0}
   _agentDestinationTransform: {fileID: 0}
   _velocity: {x: 0, y: 0, z: 0}
   _velocityNormalizedMagnitude: 0
@@ -548,6 +554,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &5974540588067552538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635848219313484522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 993be29a710529a4fbb3563b7c7632f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animationBlendSpeed: 6
 --- !u!1 &727044521091823048
 GameObject:
   m_ObjectHideFlags: 0

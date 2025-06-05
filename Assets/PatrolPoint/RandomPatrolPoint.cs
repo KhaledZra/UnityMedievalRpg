@@ -12,7 +12,6 @@ public class RandomPatrolPoint : MonoBehaviour
     
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("PatrolPoint: OnTriggerEnter called with " + other.gameObject.name);
         // Check if the collider belongs to the 
         if (other.gameObject.TryGetComponent(out NpcController npcController))
         {

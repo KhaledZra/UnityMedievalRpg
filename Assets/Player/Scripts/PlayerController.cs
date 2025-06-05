@@ -199,7 +199,6 @@ public class PlayerController : MonoBehaviour
         }
         
         Debug.DrawRay(_mainRaycastCamera.position, _mainRaycastCamera.forward * _attackDistance, Color.white, 10f);
-        Debug.Log("Did not Hit");
         return false;
     }
 
