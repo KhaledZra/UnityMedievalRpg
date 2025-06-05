@@ -95,7 +95,21 @@ public class NpcController : MonoBehaviour
         ChangeMovementSpeed(_startMoveState);
     }
 
-    private void TriggerCurrentAiState()
+    // Update is called once per frame
+    void Update()
+    {
+        // Setting debug values
+        _velocity = _navMeshAgent.velocity;
+        _velocityNormalizedMagnitude = KMath.Normalize(
+            KMath.Magnitude(_velocity),
+            0f,
+            _npcMovementValues.runSpeed);
+        
+        // Update the movement state based on the normalized velocity magnitude
+        _animationController.UpdateAnimator(_velocityNormalizedMagnitude);
+    }
+    
+        private void TriggerCurrentAiState()
     {
         // Stop any existing patrol coroutine
         if (_patrolCoroutine != null)
@@ -164,20 +178,6 @@ public class NpcController : MonoBehaviour
         
         // Basically a loop to keep following the target
         TriggerCurrentAiState();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // Setting debug values
-        _velocity = _navMeshAgent.velocity;
-        _velocityNormalizedMagnitude = KMath.Normalize(
-            KMath.Magnitude(_velocity),
-            0f,
-            _npcMovementValues.runSpeed);
-        
-        // Update the movement state based on the normalized velocity magnitude
-        _animationController.UpdateAnimator(_velocityNormalizedMagnitude);
     }
 
     private void ChangeMovementSpeed(ENpcMovementStates newState)
