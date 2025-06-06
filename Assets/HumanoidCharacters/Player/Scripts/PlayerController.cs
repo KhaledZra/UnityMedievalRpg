@@ -68,7 +68,7 @@ public class PlayerController : MonoBehaviour
         _inputsInitialized = false;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         PlayerState.UpdateGroundState(_characterController, transform);
         PlayerState.UpdateMovementState(PlayerInputHandler.Instance.MovementInputValue);
@@ -117,7 +117,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Apply gravity
-        _verticalVelocity += _movementValues.gravityValue * Time.fixedDeltaTime;
+        _verticalVelocity += _movementValues.gravityValue * Time.deltaTime;
     }
 
     private void ApplyJump()

@@ -195,7 +195,7 @@ public class NpcController : MonoBehaviour
         {
             ChangeMovementSpeed(ENpcMovementStates.Walking); // Walk towards the target
         }
-        else if (distanceToTarget < 6f)
+        else if (distanceToTarget < 7f)
         {
             ChangeMovementSpeed(ENpcMovementStates.Running); // Sprint towards the target
         }

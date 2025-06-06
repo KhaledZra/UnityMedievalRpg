@@ -13,7 +13,7 @@ public class PlayerLook : MonoBehaviour
     private Vector2 _lookDirection = Vector3.zero;
     private Vector2 _playerTargetRotation = Vector3.zero;
 
-    private void FixedUpdate()
+    private void LateUpdate()
     {
         LookUpdate();
     }
