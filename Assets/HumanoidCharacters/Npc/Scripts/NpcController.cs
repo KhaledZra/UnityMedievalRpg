@@ -189,7 +189,7 @@ public class NpcController : MonoBehaviour
         // Base the movement speed on the distance to the target
         float distanceToTarget = Vector3.Distance(transform.position, _followTargetTransform.position);
 
-        Debug.Log(distanceToTarget);
+        // Debug.Log(distanceToTarget);
         
         if (distanceToTarget < 4f)
         {
