@@ -2,7 +2,6 @@ using System;
 using _Game.Interfaces;
 using _Game.Structs;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 // TODO: handle delayed input actions
 // TODO: Improve state machine to handle movement states better. keep sprinting and jumping separate from the movement state
@@ -20,7 +19,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform _cameraTransform;
 
     // Player state variables
-    [FormerlySerializedAs("_playerMovementState")] [Header("Player State")]
+    [Header("Player State")]
     public PlayerState PlayerState;
 
     private float _verticalVelocity;
@@ -32,9 +31,15 @@ public class PlayerController : MonoBehaviour
         {
             // Determine the current move speed based on player state
             if (PlayerState.CurrentMovementState == PlayerState.EPlayerMovementState.Sprinting)
+            {
                 return _movementValues.sprintSpeed;
+            }
+            if (PlayerState.CurrentMovementState == PlayerState.EPlayerMovementState.Walking)
+            {
+                return _movementValues.walkSpeed;
+            }
 
-            return _movementValues.walkSpeed;
+            return _movementValues.runSpeed;
         }
     }
 
@@ -64,6 +69,7 @@ public class PlayerController : MonoBehaviour
         PlayerInputHandler.Instance.SprintInputAction -= OnSprintInput;
         PlayerInputHandler.Instance.LeftAttackInputAction -= OnLeftAttackInput;
         PlayerInputHandler.Instance.RightAttackInputAction -= OnRightAttackInput;
+        PlayerInputHandler.Instance.ToggleWalkInputAction -= OnToggleWalkInput;
         
         _inputsInitialized = false;
     }
@@ -176,6 +182,14 @@ public class PlayerController : MonoBehaviour
         // Handle left attack input
         PlayerState.SetAttackState(PlayerState.EPlayerAttackState.RightPunching);
     }
+    
+    private void OnToggleWalkInput()
+    {
+        if (PlayerState.InGroundState())
+        {
+            PlayerState.WantsToWalk = !PlayerState.WantsToWalk;
+        }
+    }
 
     private bool RaycastAttack(out RaycastHit raycastHit)
     {
@@ -244,6 +258,7 @@ public class PlayerController : MonoBehaviour
         PlayerInputHandler.Instance.SprintInputAction += OnSprintInput;
         PlayerInputHandler.Instance.LeftAttackInputAction += OnLeftAttackInput;
         PlayerInputHandler.Instance.RightAttackInputAction += OnRightAttackInput;
+        PlayerInputHandler.Instance.ToggleWalkInputAction += OnToggleWalkInput;
         
         // Set inputs initialized to true
         _inputsInitialized = true;

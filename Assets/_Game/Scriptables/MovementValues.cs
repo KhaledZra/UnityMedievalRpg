@@ -5,16 +5,18 @@ using UnityEngine;
 public class MovementValues : ScriptableObject
 {
     public float walkSpeed; // Speed when walking
+    public float runSpeed; // Speed when running
     public float sprintSpeed; // Speed when sprinting
     public float crouchSpeed; // Speed when crouching
     public float jumpForce; // Force applied when jumping
     public float gravityValue; // Gravity value applied to the player
     public float accelerationSpeed; // Speed at which the player accelerates
-    public float dragSpeed = 5f; // Speed at which the player decelerates
+    public float dragSpeed; // Speed at which the player decelerates
     
     // Saved values
-    [ReadOnly, SerializeField] private float _defaultWalkSpeed = 5f;
-    [ReadOnly, SerializeField] private float _defaultSprintSpeed = 10f;
+    [ReadOnly, SerializeField] private float _defaultWalkSpeed = 2.5f;
+    [ReadOnly, SerializeField] private float _defaultRunSpeed = 5f;
+    [ReadOnly, SerializeField] private float _defaultSprintSpeed = 7.5f;
     [ReadOnly, SerializeField] private float _defaultCrouchSpeed = 2f;
     [ReadOnly, SerializeField] private float _defaultJumpForce = 1f;
     [ReadOnly, SerializeField] private float _defaultGravityValue = -9.81f;
@@ -31,6 +33,7 @@ public class MovementValues : ScriptableObject
     {
         // Set default values for the movement parameters
         walkSpeed = _defaultWalkSpeed;
+        runSpeed = _defaultRunSpeed;
         sprintSpeed = _defaultSprintSpeed;
         crouchSpeed = _defaultCrouchSpeed;
         jumpForce = _defaultJumpForce;
@@ -44,6 +47,7 @@ public class MovementValues : ScriptableObject
     {
         // Save the current values to the scriptable object
         _defaultWalkSpeed = walkSpeed;
+        _defaultRunSpeed = runSpeed;
         _defaultSprintSpeed = sprintSpeed;
         _defaultCrouchSpeed = crouchSpeed;
         _defaultJumpForce = jumpForce;

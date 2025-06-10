@@ -16,6 +16,7 @@ public class PlayerState : MonoBehaviour
     // todo so if we stop sprinting to jump, we can go back to sprinting on landing
     [SerializeField] public bool WantsToSprint;
     [SerializeField] public bool WantsToJump;
+    [SerializeField] public bool WantsToWalk;
     
     [Header("Ground Layer Mask")]
     [SerializeField] private LayerMask _groundLayerMask;
@@ -31,9 +32,18 @@ public class PlayerState : MonoBehaviour
         // Check the movement input and update the movement state
         if (movementInput.magnitude > 0.1f)
         {
-            CurrentMovementState = WantsToSprint ?
-                EPlayerMovementState.Sprinting :
-                EPlayerMovementState.Walking;
+            if (WantsToSprint)
+            {
+                CurrentMovementState = EPlayerMovementState.Sprinting;
+            }
+            else if (WantsToWalk)
+            {
+                CurrentMovementState = EPlayerMovementState.Walking;
+            }
+            else
+            {
+                CurrentMovementState = EPlayerMovementState.Running;
+            }
         }
         else
         {

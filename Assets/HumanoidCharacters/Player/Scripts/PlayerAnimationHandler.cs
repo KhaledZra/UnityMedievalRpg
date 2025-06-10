@@ -6,7 +6,7 @@ public class PlayerAnimationHandler : MonoBehaviour
 {
     [Header("Animation")] [SerializeField] private Animator _animator;
     [SerializeField] private float _animationBlendSpeed = 0.02f;
-    [FormerlySerializedAs("_playerMovementState")] [SerializeField] private PlayerState _playerState;
+    [SerializeField] private PlayerState _playerState;
 
     // So we don't have to use strings
     private static readonly int InputXHash = Animator.StringToHash("InputX");
@@ -30,6 +30,7 @@ public class PlayerAnimationHandler : MonoBehaviour
     {
         bool isSprinting = _playerState.CurrentMovementState ==
                            PlayerState.EPlayerMovementState.Sprinting;
+        bool isWalking = _playerState.CurrentMovementState == PlayerState.EPlayerMovementState.Walking;
         bool isJumping = _playerState.CurrentGroundState == PlayerState.EPlayerGroundState.Jumping;
         bool isFalling = _playerState.CurrentGroundState == PlayerState.EPlayerGroundState.Falling;
         bool isGrounded = _playerState.InGroundState();
@@ -39,9 +40,16 @@ public class PlayerAnimationHandler : MonoBehaviour
         bool isPlayingAction = _playerState.CurrentAttackState != PlayerState.EPlayerAttackState.Idle;
 
 
-        Vector2 inputTarget = isSprinting
-            ? PlayerInputHandler.Instance.MovementInputValue * 1.5f
-            : PlayerInputHandler.Instance.MovementInputValue;
+        // Set the input target based on the current movement state
+        Vector2 inputTarget = PlayerInputHandler.Instance.MovementInputValue;
+        if (isSprinting)
+        {
+            inputTarget *= 1.5f;
+        }
+        else if (isWalking)
+        {
+            inputTarget *= 0.5f;
+        }
 
         // Lerping the input values for smoother transitions
         _currentBlendInput = Vector2.Lerp(_currentBlendInput, inputTarget, _animationBlendSpeed * Time.deltaTime);

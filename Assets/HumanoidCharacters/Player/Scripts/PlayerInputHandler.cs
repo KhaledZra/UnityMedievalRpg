@@ -18,6 +18,7 @@ public class PlayerInputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActi
     public event Action<bool> SprintInputAction;
     public event Action LeftAttackInputAction;
     public event Action RightAttackInputAction;
+    public event Action ToggleWalkInputAction;
 
     private void Awake()
     {
@@ -118,5 +119,14 @@ public class PlayerInputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActi
     public void OnSprint(InputAction.CallbackContext context)
     {
         SprintInputAction?.Invoke(context.ReadValueAsButton());
+    }
+
+    public void OnToggleWalk(InputAction.CallbackContext context)
+    {
+        // Invoke the toggle walk input action if the context is performed
+        if (context.performed)
+        {
+            ToggleWalkInputAction?.Invoke();
+        }
     }
 }
