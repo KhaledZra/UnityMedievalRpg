@@ -5228,10 +5228,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1158357616}
     m_Modifications:
+    - target: {fileID: 476968951012902300, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4720f49ba6a89f24a8b36ec013edd5c5, type: 2}
+    - target: {fileID: 538992683972101523, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4720f49ba6a89f24a8b36ec013edd5c5, type: 2}
+    - target: {fileID: 999417391442143230, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4720f49ba6a89f24a8b36ec013edd5c5, type: 2}
+    - target: {fileID: 4612775444463855329, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4720f49ba6a89f24a8b36ec013edd5c5, type: 2}
     - target: {fileID: 5917088695832266551, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
       propertyPath: m_Name
       value: GuardNpc_Helm_Beard
       objectReference: {fileID: 0}
+    - target: {fileID: 7140677704940624843, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4720f49ba6a89f24a8b36ec013edd5c5, type: 2}
     - target: {fileID: 7595298751293020454, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
       propertyPath: _npcAiState
       value: 2
@@ -5284,6 +5304,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8702558982048684398, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4720f49ba6a89f24a8b36ec013edd5c5, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -5529,6 +5553,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 213136244134247988, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f1e86582ea5b6cf4a8d06337f4a56c66, type: 2}
+    - target: {fileID: 2668096094274810154, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f1e86582ea5b6cf4a8d06337f4a56c66, type: 2}
+    - target: {fileID: 5431114529997256221, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f1e86582ea5b6cf4a8d06337f4a56c66, type: 2}
     - target: {fileID: 6392227605582652948, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
       propertyPath: _npcAiState
       value: 1
@@ -5557,6 +5593,18 @@ PrefabInstance:
       propertyPath: '_patrolPoints.Array.data[2]'
       value: 
       objectReference: {fileID: 1762270793}
+    - target: {fileID: 7103798453608161969, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f1e86582ea5b6cf4a8d06337f4a56c66, type: 2}
+    - target: {fileID: 7470769530920265178, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f1e86582ea5b6cf4a8d06337f4a56c66, type: 2}
+    - target: {fileID: 8892089887018336889, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f1e86582ea5b6cf4a8d06337f4a56c66, type: 2}
     - target: {fileID: 9141775778938875031, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
       propertyPath: m_Name
       value: GuardNpc_Helm_NoFacial
@@ -5638,10 +5686,30 @@ PrefabInstance:
       propertyPath: _followTargetTransform
       value: 
       objectReference: {fileID: 924548730}
+    - target: {fileID: 612782586342372224, guid: 402cad5581bafc942b16102d46c384e1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7bfbfdd612f172c47b3e6fcc5dd24e4f, type: 2}
+    - target: {fileID: 1351825697354482027, guid: 402cad5581bafc942b16102d46c384e1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7bfbfdd612f172c47b3e6fcc5dd24e4f, type: 2}
+    - target: {fileID: 2706878231443041227, guid: 402cad5581bafc942b16102d46c384e1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7bfbfdd612f172c47b3e6fcc5dd24e4f, type: 2}
     - target: {fileID: 3830629144973895469, guid: 402cad5581bafc942b16102d46c384e1, type: 3}
       propertyPath: m_Name
       value: GuardNpc_Helm_FullBeard
       objectReference: {fileID: 0}
+    - target: {fileID: 4948200584602792444, guid: 402cad5581bafc942b16102d46c384e1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7bfbfdd612f172c47b3e6fcc5dd24e4f, type: 2}
+    - target: {fileID: 5342303585097679602, guid: 402cad5581bafc942b16102d46c384e1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7bfbfdd612f172c47b3e6fcc5dd24e4f, type: 2}
     - target: {fileID: 5484635742827132955, guid: 402cad5581bafc942b16102d46c384e1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 21.773
@@ -5682,6 +5750,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5518482470208224614, guid: 402cad5581bafc942b16102d46c384e1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7bfbfdd612f172c47b3e6fcc5dd24e4f, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
