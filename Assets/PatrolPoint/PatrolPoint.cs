@@ -1,13 +1,24 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(SphereCollider))]
 public class PatrolPoint : MonoBehaviour
 {
     private SphereCollider _sphereCollider;
+    
+    [Header("Patrol Point Actions")]
+    [SerializeField] public PatrolPointActionValues patrolPointActions;
+    [SerializeField] public bool hasActionActive;
+    
 
     private void Awake()
     {
         _sphereCollider = GetComponent<SphereCollider>();
+    }
+    
+    private void Start()
+    {
+        hasActionActive = patrolPointActions;
     }
     
     private void OnTriggerEnter(Collider other)

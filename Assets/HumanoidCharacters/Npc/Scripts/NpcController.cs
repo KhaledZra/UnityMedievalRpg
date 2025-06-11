@@ -17,7 +17,7 @@ public class NpcController : MonoBehaviour
     private NavMeshAgent _navMeshAgent;
     private Rigidbody _rigidbody;
     private NpcAnimationController _animationController;
-    
+
     private enum ENpcAiState
     {
         Idle = 0,
@@ -25,7 +25,7 @@ public class NpcController : MonoBehaviour
         FollowRandomPatrol = 2,
         FollowTarget = 3,
     }
-    
+
     public enum ENpcMovementStates
     {
         Stationary = 0,
@@ -33,9 +33,8 @@ public class NpcController : MonoBehaviour
         Running = 2,
         Sprinting = 3,
     }
-    
-    [Header("Movement Values")]
-    [SerializeField]
+
+    [Header("Movement Values")] [SerializeField]
     private NpcMovementValues _npcMovementValues;
 
     [SerializeField] private ENpcMovementStates _startMoveState = ENpcMovementStates.Running;
@@ -43,42 +42,46 @@ public class NpcController : MonoBehaviour
 
     [Header("Agent Settings")] [SerializeField]
     private bool _enableAgent = true;
-    
+
     [Header("Patrol Settings")]
     // General coroutine used for patrolling
     private Coroutine _patrolCoroutine;
-    
-    [Header("Waiting Settings")]
-    [SerializeField] private bool _enableWaiting;
+
+    [Header("Waiting Settings")] [SerializeField]
+    private bool _enableWaiting;
+
     [SerializeField] private float _waitTime;
-    
-    [Space]
-    [Header("Patrol points")]
-    [SerializeField] private PatrolPoint[] _patrolPoints;
+
+    [Space] [Header("Patrol points")] [SerializeField]
+    private PatrolPoint[] _patrolPoints;
+
     [SerializeField, ReadOnly] private int _currentPatrolIndex = 0;
-    
-    [Space]
-    [Header("States")]
-    [SerializeField] private ENpcAiState _npcAiState = ENpcAiState.Idle;
+    [SerializeField, ReadOnly] private PatrolPointActionValues _activePatrolPointActionValues;
+
+    [Space] [Header("States")] [SerializeField]
+    private ENpcAiState _npcAiState = ENpcAiState.Idle;
+
     [SerializeField, ReadOnly] private ENpcAiState _lastActiveNpcAiState = ENpcAiState.Idle;
-    
-    [Space]
-    [Header("Random Patrol")]
-    [SerializeField] private float _randomPatrolDistance = 10f;
+
+    [Space] [Header("Random Patrol")] [SerializeField]
+    private float _randomPatrolDistance = 10f;
+
     [SerializeField, ReadOnly] private Vector3 _randomPatrolDestination;
     [SerializeField] private GameObject _randomPatrolPointPrefab;
+
     [SerializeField, ReadOnly] private GameObject _activeRandomPatrolPoint;
+
     // The name of the NavMesh area to use for random patrol
     [SerializeField] private string _navmeshLayerName = "Walkable";
-    
-    [Space]
-    [Header("Follow Target")]
-    [SerializeField] private float _followTargetStopDistance = 3f;
+
+    [Space] [Header("Follow Target")] [SerializeField]
+    private float _followTargetStopDistance = 3f;
+
     [SerializeField] private Transform _followTargetTransform;
-    
-    [Space]
-    [Header("--  Debugging  --")] 
-    [SerializeField] private Transform _agentDestinationTransform;
+
+    [Space] [Header("--  Debugging  --")] [SerializeField]
+    private Transform _agentDestinationTransform;
+
     [SerializeField] private Vector3 _velocity;
     [SerializeField] private float _velocityNormalizedMagnitude;
     [SerializeField] private TextMeshPro _stateText;
@@ -119,12 +122,12 @@ public class NpcController : MonoBehaviour
             _velocity.magnitude,
             0f,
             _npcMovementValues.runSpeed);
-        
+
         // Update the movement state based on the normalized velocity magnitude
         _animationController.UpdateAnimator(_velocityNormalizedMagnitude);
     }
-    
-        private void TriggerCurrentAiState()
+
+    private void TriggerCurrentAiState()
     {
         // Stop any existing patrol coroutine
         if (_patrolCoroutine != null)
@@ -132,29 +135,29 @@ public class NpcController : MonoBehaviour
             StopCoroutine(_patrolCoroutine);
             _patrolCoroutine = null;
         }
-        
+
         // To be safe since it's changes in specific states.
         _navMeshAgent.stoppingDistance = 0f;
         _navMeshAgent.enabled = true; // Ensure the agent is enabled
-        
+
         switch (_npcAiState)
         {
             case ENpcAiState.Idle:
                 _navMeshAgent.enabled = false;
                 break; // Currently does nothing
-            case ENpcAiState.FollowPatrolPoints: 
-                _patrolCoroutine = StartCoroutine(ContinuePointPatrol()); 
+            case ENpcAiState.FollowPatrolPoints:
+                _patrolCoroutine = StartCoroutine(ContinuePointPatrol());
                 break;
-            case ENpcAiState.FollowRandomPatrol: 
-                _patrolCoroutine = StartCoroutine(ContinueRandomPatrol()); 
+            case ENpcAiState.FollowRandomPatrol:
+                _patrolCoroutine = StartCoroutine(ContinueRandomPatrol());
                 break;
             case ENpcAiState.FollowTarget:
                 _patrolCoroutine = StartCoroutine(ContinueFollowTarget());
                 break;
-            
+
             default: throw new ArgumentOutOfRangeException();
         }
-        
+
         // Update the state text for debugging
         if (_stateText)
         {
@@ -171,32 +174,33 @@ public class NpcController : MonoBehaviour
         {
             yield return new WaitForSeconds(_waitTime);
         }
-        
+
         // If we don't have a random patrol point, instantiate one
         if (!_activeRandomPatrolPoint)
         {
             int areaIndex = NavMesh.GetAreaFromName(_navmeshLayerName);
             int areaMask = 1 << areaIndex;
-            
+
             _randomPatrolDestination = RandomNavSphere(transform.position, _randomPatrolDistance, areaMask);
             _randomPatrolDestination.y += 1f;
-            _activeRandomPatrolPoint = Instantiate(_randomPatrolPointPrefab, _randomPatrolDestination, Quaternion.identity);
+            _activeRandomPatrolPoint =
+                Instantiate(_randomPatrolPointPrefab, _randomPatrolDestination, Quaternion.identity);
         }
-        
+
         MoveTo(_randomPatrolDestination);
     }
-    
+
     private IEnumerator ContinueFollowTarget()
     {
         if (_npcAiState != ENpcAiState.FollowTarget) yield break;
         if (!_followTargetTransform) yield break;
-        
+
         _navMeshAgent.stoppingDistance = _followTargetStopDistance;
-        
+
         MoveTo(_followTargetTransform.position);
         // Wait for a short duration before checking again for the updated target location
         yield return new WaitForSeconds(0.5f);
-        
+
         // Update the speed based on the distance to the target
         UpdateSpeedBasedOnDistance();
 
@@ -210,7 +214,7 @@ public class NpcController : MonoBehaviour
         float distanceToTarget = Vector3.Distance(transform.position, _followTargetTransform.position);
 
         // Debug.Log(distanceToTarget);
-        
+
         if (distanceToTarget < 4f)
         {
             ChangeMovementSpeed(ENpcMovementStates.Walking); // Walk towards the target
@@ -238,7 +242,7 @@ public class NpcController : MonoBehaviour
             ENpcMovementStates.Sprinting => _npcMovementValues.sprintSpeed,
             _ => throw new ArgumentOutOfRangeException()
         };
-        
+
         _activeMoveState = newState; // Update the active movement state
     }
 
@@ -247,12 +251,21 @@ public class NpcController : MonoBehaviour
         if (_npcAiState != ENpcAiState.FollowPatrolPoints) yield break;
         if (_patrolPoints.Length == 0) yield break;
 
+        // Check and perform patrol point action
+        if (_activePatrolPointActionValues)
+        {
+            _animationController.UpdateAnimationAction(_activePatrolPointActionValues.actionClip);
+            yield return new WaitForSeconds(_activePatrolPointActionValues.actionDuration);
+            _animationController.UpdateAnimationAction(null);
+            _activePatrolPointActionValues = null; // Reset the action values after performing the action
+        }
+
         // Move to the next patrol point
         if (_enableWaiting)
         {
             yield return new WaitForSeconds(_waitTime);
         }
-        
+
         // Stop patrolling if only one point is available but move to that location
         if (_patrolPoints.Length == 1)
         {
@@ -273,6 +286,12 @@ public class NpcController : MonoBehaviour
         // Check if the patrol point is the one we are currently targeting
         if (_patrolPoints[_currentPatrolIndex] != patrolPoint) return;
 
+        // Check and perform patrol point action
+        if (patrolPoint.hasActionActive)
+        {
+            _activePatrolPointActionValues = patrolPoint.patrolPointActions;
+        }
+
         if (_currentPatrolIndex + 1 >= _patrolPoints.Length)
         {
             _currentPatrolIndex = 0; // Reset to the first patrol point
@@ -281,23 +300,23 @@ public class NpcController : MonoBehaviour
         {
             _currentPatrolIndex++; // Move to the next patrol point
         }
-        
+
         TriggerCurrentAiState();
     }
-    
+
     // This method should be called when the agent reaches the randomized point
     public void OnRandomPatrolPointReached(GameObject randomPatrolPoint)
     {
         // Check if the patrol point is the one we are currently targeting
         if (randomPatrolPoint != _activeRandomPatrolPoint) return;
-        
+
         // Destroy the random patrol point object
         Destroy(randomPatrolPoint.gameObject);
-        
+
         // Reset the random patrol destination
         _randomPatrolDestination = Vector3.zero;
         _activeRandomPatrolPoint = null;
-        
+
         // Retrigger the current AI state to continue
         TriggerCurrentAiState();
     }
@@ -308,8 +327,8 @@ public class NpcController : MonoBehaviour
 
         _navMeshAgent.SetDestination(destination);
     }
-    
-    
+
+
     [Button]
     private void DebugMoveToTarget()
     {
@@ -317,13 +336,13 @@ public class NpcController : MonoBehaviour
 
         MoveTo(_agentDestinationTransform.position);
     }
-    
+
     [Button]
     private void DebugUpdateAiState()
     {
         TriggerCurrentAiState();
     }
-    
+
     [Button]
     private void DebugStopAiMovement()
     {
@@ -334,7 +353,7 @@ public class NpcController : MonoBehaviour
         _npcAiState = ENpcAiState.Idle; // Set to idle state
         TriggerCurrentAiState();
     }
-    
+
     [Button]
     private void DebugResumeAiMovement()
     {
@@ -343,7 +362,7 @@ public class NpcController : MonoBehaviour
         _npcAiState = _lastActiveNpcAiState; // Restore the last AI state
         TriggerCurrentAiState();
     }
-    
+
     [Button]
     private void DebugEnableRunning()
     {
@@ -352,7 +371,7 @@ public class NpcController : MonoBehaviour
         if (!_navMeshAgent) return;
         ChangeMovementSpeed(ENpcMovementStates.Running);
     }
-    
+
     [Button]
     private void DebugEnableWalking()
     {
@@ -361,14 +380,15 @@ public class NpcController : MonoBehaviour
         if (!_navMeshAgent) return;
         ChangeMovementSpeed(ENpcMovementStates.Walking);
     }
-    
-    private Vector3 RandomNavSphere(Vector3 origin, float distance, int layermask) {
+
+    private Vector3 RandomNavSphere(Vector3 origin, float distance, int layermask)
+    {
         Vector3 randomDirection = UnityEngine.Random.insideUnitSphere * distance;
-           
+
         randomDirection += origin;
-           
-        NavMesh.SamplePosition (randomDirection, out NavMeshHit navHit, distance, layermask);
-           
+
+        NavMesh.SamplePosition(randomDirection, out NavMeshHit navHit, distance, layermask);
+
         return navHit.position;
     }
 }

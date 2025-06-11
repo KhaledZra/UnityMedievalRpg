@@ -3649,16 +3649,19 @@ MonoBehaviour:
   _npcMovementValues: {fileID: 11400000, guid: 3f59a71ed9591b24882c185c79412ad8, type: 2}
   _startMoveState: 2
   _activeMoveState: 2
+  _enableAgent: 1
   _enableWaiting: 1
   _waitTime: 2
   _patrolPoints: []
   _currentPatrolIndex: 0
+  _activePatrolPointActionValues: {fileID: 0}
   _npcAiState: 0
   _lastActiveNpcAiState: 0
   _randomPatrolDistance: 10
   _randomPatrolDestination: {x: 0, y: 0, z: 0}
   _randomPatrolPointPrefab: {fileID: 7593919742974516957, guid: 2c1ca6baf7507f740ab2ec2a9d8a2a8c, type: 3}
   _activeRandomPatrolPoint: {fileID: 0}
+  _navmeshLayerName: Main Road
   _followTargetStopDistance: 2
   _followTargetTransform: {fileID: 0}
   _agentDestinationTransform: {fileID: 0}
@@ -3726,6 +3729,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 993be29a710529a4fbb3563b7c7632f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  placeholderClip: {fileID: 0}
   _animationBlendSpeed: 6
 --- !u!1 &5948799239660877150
 GameObject:
