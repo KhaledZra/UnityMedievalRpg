@@ -21,62 +21,6 @@ namespace Khaled.MathLib
         }
 
         /// <summary>
-        /// Calculates the magnitude value from the given Vector3.
-        /// </summary>
-        /// <param name="value">The value to calculate magnitude.</param>
-        /// <returns>The Magnitude of value.</returns>
-        public static float Magnitude(Vector3 value)
-        {
-            return SquareRoot(
-                Power(value.x, 2) +
-                Power(value.y, 2) +
-                Power(value.z, 2));
-        }
-
-        /// <summary>
-        /// Calculate the square root of a number using the Newton-Raphson method.
-        /// </summary>
-        /// <param name="value">The value to calculate square root.</param>
-        /// <returns>The square root of value</returns>
-        public static float SquareRoot(float value)
-        {
-            if (value < 0) throw new ArgumentException("Negative input");
-
-            float x = value / 2f;
-            float tolerance = 0.00001f;
-
-            while (Absolute(x * x - value) > tolerance)
-            {
-                x = 0.5f * (x + value / x);
-            }
-
-            return x;
-        }
-
-        /// <summary>
-        /// Calculates the power of a base value raised to an exponent using exponentiation by squaring.
-        /// </summary>
-        /// <param name="baseValue">the base value</param>
-        /// <param name="exponent">The exponent value</param>
-        /// <returns>The result of baseValue raised to the power of exponent</returns>
-        public static float Power(float baseValue, int exponent)
-        {
-            if (exponent == 0) return 1;
-            if (exponent < 0) return 1 / Power(baseValue, -exponent);
-
-            float result = 1;
-            while (exponent > 0)
-            {
-                if ((exponent % 2) == 1)
-                    result *= baseValue;
-                baseValue *= baseValue;
-                exponent /= 2;
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Calculates the absolute value of a float. Basically removes the sign of the value.
         /// </summary>
         /// <param name="value">the value to return the absolute value of</param>

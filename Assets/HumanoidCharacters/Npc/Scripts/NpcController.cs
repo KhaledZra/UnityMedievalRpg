@@ -5,7 +5,7 @@ using NaughtyAttributes;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(NavMeshAgent))]
@@ -41,7 +41,9 @@ public class NpcController : MonoBehaviour
     [SerializeField] private ENpcMovementStates _startMoveState = ENpcMovementStates.Running;
     [SerializeField, ReadOnly] private ENpcMovementStates _activeMoveState = ENpcMovementStates.Running;
 
-
+    [Header("Agent Settings")] [SerializeField]
+    private bool _enableAgent = true;
+    
     [Header("Patrol Settings")]
     // General coroutine used for patrolling
     private Coroutine _patrolCoroutine;
@@ -66,6 +68,8 @@ public class NpcController : MonoBehaviour
     [SerializeField, ReadOnly] private Vector3 _randomPatrolDestination;
     [SerializeField] private GameObject _randomPatrolPointPrefab;
     [SerializeField, ReadOnly] private GameObject _activeRandomPatrolPoint;
+    // The name of the NavMesh area to use for random patrol
+    [SerializeField] private string _navmeshLayerName = "Walkable";
     
     [Space]
     [Header("Follow Target")]
@@ -91,9 +95,19 @@ public class NpcController : MonoBehaviour
 
     private void Start()
     {
-        _activeMoveState = _startMoveState;
-        TriggerCurrentAiState();
-        ChangeMovementSpeed(_startMoveState);
+        if (_enableAgent)
+        {
+            _activeMoveState = _startMoveState;
+            TriggerCurrentAiState();
+            ChangeMovementSpeed(_startMoveState);
+            _navMeshAgent.avoidancePriority = Random.Range(30, 70);
+        }
+        else
+        {
+            // Disable the NavMeshAgent if not enabled
+            _navMeshAgent.enabled = false;
+            _activeMoveState = ENpcMovementStates.Stationary; // Set to stationary if agent is not enabled
+        }
     }
 
     // Update is called once per frame
@@ -102,7 +116,7 @@ public class NpcController : MonoBehaviour
         // Setting debug values
         _velocity = _navMeshAgent.velocity;
         _velocityNormalizedMagnitude = KMath.Normalize(
-            KMath.Magnitude(_velocity),
+            _velocity.magnitude,
             0f,
             _npcMovementValues.runSpeed);
         
@@ -121,10 +135,13 @@ public class NpcController : MonoBehaviour
         
         // To be safe since it's changes in specific states.
         _navMeshAgent.stoppingDistance = 0f;
+        _navMeshAgent.enabled = true; // Ensure the agent is enabled
         
         switch (_npcAiState)
         {
-            case ENpcAiState.Idle: break; // Currently does nothing
+            case ENpcAiState.Idle:
+                _navMeshAgent.enabled = false;
+                break; // Currently does nothing
             case ENpcAiState.FollowPatrolPoints: 
                 _patrolCoroutine = StartCoroutine(ContinuePointPatrol()); 
                 break;
@@ -158,7 +175,10 @@ public class NpcController : MonoBehaviour
         // If we don't have a random patrol point, instantiate one
         if (!_activeRandomPatrolPoint)
         {
-            _randomPatrolDestination = RandomNavSphere(transform.position, _randomPatrolDistance, NavMesh.AllAreas);
+            int areaIndex = NavMesh.GetAreaFromName(_navmeshLayerName);
+            int areaMask = 1 << areaIndex;
+            
+            _randomPatrolDestination = RandomNavSphere(transform.position, _randomPatrolDistance, areaMask);
             _randomPatrolDestination.y += 1f;
             _activeRandomPatrolPoint = Instantiate(_randomPatrolPointPrefab, _randomPatrolDestination, Quaternion.identity);
         }
