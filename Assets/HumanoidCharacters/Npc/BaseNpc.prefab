@@ -489,6 +489,7 @@ MonoBehaviour:
   _npcMovementValues: {fileID: 11400000, guid: 3f59a71ed9591b24882c185c79412ad8, type: 2}
   _startMoveState: 2
   _activeMoveState: 2
+  _enableAgent: 1
   _enableWaiting: 0
   _waitTime: 0
   _patrolPoints: []
@@ -499,6 +500,7 @@ MonoBehaviour:
   _randomPatrolDestination: {x: 0, y: 0, z: 0}
   _randomPatrolPointPrefab: {fileID: 7593919742974516957, guid: 2c1ca6baf7507f740ab2ec2a9d8a2a8c, type: 3}
   _activeRandomPatrolPoint: {fileID: 0}
+  _navmeshLayerName: Main Road
   _followTargetStopDistance: 3
   _followTargetTransform: {fileID: 0}
   _agentDestinationTransform: {fileID: 0}
