@@ -10,17 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b17285f65f19f3e4985b621317e83643, type: 3}
-  m_Name: Talk1Action
+  m_Name: ShieldGuardAction
   m_EditorClassIdentifier: 
-  actionClip: {fileID: 3094330708855449807, guid: 13e5c6347e4990141aff0df3db32a8d6, type: 3}
-  actionDuration: 5
+  actionClip: {fileID: 6589092039564311902, guid: a8bd4d740daa72c46bbff25e229c4ad2, type: 3}
+  actionDuration: 3
   hasRotationAction: 1
   yRotationDirection: 180
-  rotationActionDuration: 2
-  rotationSpeed: 5
-  _defaultActionClip: {fileID: 3094330708855449807, guid: 13e5c6347e4990141aff0df3db32a8d6, type: 3}
-  _defaultActionDuration: 5
+  rotationActionDuration: 1.5
+  rotationSpeed: 7
+  actionCompletionDelay: 1
+  _defaultActionClip: {fileID: 6589092039564311902, guid: a8bd4d740daa72c46bbff25e229c4ad2, type: 3}
+  _defaultActionDuration: 3
   _defaultHasRotationAction: 1
   _defaultYRotationDirection: 180
-  _defaultRotationActionDuration: 2
-  _defaultRotationSpeed: 5
+  _defaultRotationActionDuration: 1.5
+  _defaultRotationSpeed: 7
+  _defaultActionCompletionDelay: 1

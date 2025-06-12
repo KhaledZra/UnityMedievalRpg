@@ -1,3 +1,4 @@
+using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -7,20 +8,23 @@ public class PatrolPoint : MonoBehaviour
     private SphereCollider _sphereCollider;
     
     [Header("Patrol Point Actions")]
-    [SerializeField] public PatrolPointActionValues patrolPointActions;
-    [SerializeField] public bool hasActionActive;
+    [SerializeField] public PatrolPointActionValues[] patrolPointActions;
+    [SerializeField] public bool hasRotationAction = false;
+    [SerializeField, ReadOnly] public float yRotationDirection = 0f;
+    [SerializeField] public float rotationActionDuration = 2f;
+    [SerializeField] public float rotationSpeed = 5f;
     
 
     private void Awake()
     {
         _sphereCollider = GetComponent<SphereCollider>();
     }
-    
+
     private void Start()
     {
-        hasActionActive = patrolPointActions;
+        yRotationDirection = transform.eulerAngles.y;
     }
-    
+
     private void OnTriggerEnter(Collider other)
     {
         // Check if the collider belongs to the 

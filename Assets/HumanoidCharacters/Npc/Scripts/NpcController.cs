@@ -56,7 +56,8 @@ public class NpcController : MonoBehaviour
     private PatrolPoint[] _patrolPoints;
 
     [SerializeField, ReadOnly] private int _currentPatrolIndex = 0;
-    [SerializeField, ReadOnly] private PatrolPointActionValues _activePatrolPointActionValues;
+    [SerializeField, ReadOnly] private PatrolPointActionValues[] _activePatrolPointActionValues;
+    [SerializeField, ReadOnly] private PatrolPoint _activePatrolPoint;
 
     [Space] [Header("States")] [SerializeField]
     private ENpcAiState _npcAiState = ENpcAiState.Idle;
@@ -85,7 +86,9 @@ public class NpcController : MonoBehaviour
     [SerializeField] private Vector3 _velocity;
     [SerializeField] private float _velocityNormalizedMagnitude;
     [SerializeField] private TextMeshPro _stateText;
-
+    [SerializeField, ReadOnly] private bool _hasRotationTarget;
+    [SerializeField, ReadOnly] private Quaternion _rotationTarget;
+    [SerializeField, ReadOnly] private float _rotationSpeed = 5f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -125,6 +128,12 @@ public class NpcController : MonoBehaviour
 
         // Update the movement state based on the normalized velocity magnitude
         _animationController.UpdateAnimator(_velocityNormalizedMagnitude);
+
+        // Update rotation if active
+        if (_hasRotationTarget)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, _rotationTarget, Time.deltaTime * _rotationSpeed);
+        }
     }
 
     private void TriggerCurrentAiState()
@@ -251,14 +260,41 @@ public class NpcController : MonoBehaviour
         if (_npcAiState != ENpcAiState.FollowPatrolPoints) yield break;
         if (_patrolPoints.Length == 0) yield break;
 
-        // Check and perform patrol point action
-        if (_activePatrolPointActionValues)
+        if (_activePatrolPoint && _activePatrolPoint.hasRotationAction)
         {
-            _animationController.UpdateAnimationAction(_activePatrolPointActionValues.actionClip);
-            yield return new WaitForSeconds(_activePatrolPointActionValues.actionDuration);
-            _animationController.UpdateAnimationAction(null);
-            _activePatrolPointActionValues = null; // Reset the action values after performing the action
+            // Rotate towards the specified direction
+            _rotationTarget = Quaternion.Euler(
+                transform.rotation.eulerAngles.x,
+                _activePatrolPoint.yRotationDirection,
+                transform.rotation.eulerAngles.z);
+            
+            _rotationSpeed = _activePatrolPoint.rotationSpeed;
+            _hasRotationTarget = true; // Set the rotation target flag
+            yield return new WaitForSeconds(_activePatrolPoint.rotationActionDuration);
+            _hasRotationTarget = false; // Reset the rotation target flag
+            _rotationSpeed = 5f; // Reset to default rotation speed, not really needed but for safety
         }
+
+        if (_activePatrolPointActionValues != null)
+        {
+            foreach (var patrolPointValue in _activePatrolPointActionValues)
+            {
+                // Check if the patrol point value is null or not set
+                if (!patrolPointValue) continue;
+
+                // If the patrol point has an action, perform it
+                _animationController.UpdateAnimationAction(patrolPointValue.actionClip);
+                yield return new WaitForSeconds(patrolPointValue.actionDuration);
+                _animationController.UpdateAnimationAction(null);
+
+                // Wait for the action completion delay before proceeding if specified
+                if (patrolPointValue.actionCompletionDelay.Equals(0f)) continue;
+
+                yield return new WaitForSeconds(patrolPointValue.actionCompletionDelay);
+            }
+        }
+
+        _activePatrolPointActionValues = null; // Reset the action values after performing the actions
 
         // Move to the next patrol point
         if (_enableWaiting)
@@ -273,6 +309,8 @@ public class NpcController : MonoBehaviour
             _npcAiState = ENpcAiState.Idle; // Stop patrolling
         }
 
+        // Clear the current active patrol point till we reach the next one
+        _activePatrolPoint = null;
         MoveTo(_patrolPoints[_currentPatrolIndex].transform.position);
     }
 
@@ -286,10 +324,17 @@ public class NpcController : MonoBehaviour
         // Check if the patrol point is the one we are currently targeting
         if (_patrolPoints[_currentPatrolIndex] != patrolPoint) return;
 
+        // Store the current active patrol point
+        _activePatrolPoint = patrolPoint;
+
         // Check and perform patrol point action
-        if (patrolPoint.hasActionActive)
+        if (patrolPoint.patrolPointActions is { Length: > 0 })
         {
             _activePatrolPointActionValues = patrolPoint.patrolPointActions;
+        }
+        else
+        {
+            _activePatrolPointActionValues = null; // Reset if no actions are available
         }
 
         if (_currentPatrolIndex + 1 >= _patrolPoints.Length)

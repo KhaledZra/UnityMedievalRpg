@@ -14,5 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   actionClip: {fileID: 2020693924649305378, guid: f946b4c12eb389240af2e7476c0a67a5, type: 3}
   actionDuration: 2
+  hasRotationAction: 0
+  yRotationDirection: 0
+  rotationActionDuration: 2
+  rotationSpeed: 5
+  actionCompletionDelay: 0
   _defaultActionClip: {fileID: 2020693924649305378, guid: f946b4c12eb389240af2e7476c0a67a5, type: 3}
   _defaultActionDuration: 2
+  _defaultHasRotationAction: 0
+  _defaultYRotationDirection: 0
+  _defaultRotationActionDuration: 2
+  _defaultRotationSpeed: 5
+  _defaultActionCompletionDelay: 0.5
