@@ -90,6 +90,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   patrolPointActions:
+  - {fileID: 11400000, guid: a5ea83b2647534849b7ed5818282cd98, type: 2}
   - {fileID: 11400000, guid: e10804adc31ecf84aa0732168728b6ca, type: 2}
   hasRotationAction: 1
   yRotationDirection: 0

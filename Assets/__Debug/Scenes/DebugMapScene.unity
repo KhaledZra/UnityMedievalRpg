@@ -4905,7 +4905,7 @@ PrefabInstance:
       objectReference: {fileID: 924548730}
     - target: {fileID: 6392227605582652948, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
       propertyPath: _patrolPoints.Array.size
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6392227605582652948, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
       propertyPath: '_patrolPoints.Array.data[0]'
@@ -4918,7 +4918,7 @@ PrefabInstance:
     - target: {fileID: 6392227605582652948, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
       propertyPath: '_patrolPoints.Array.data[2]'
       value: 
-      objectReference: {fileID: 1762270793}
+      objectReference: {fileID: 359560881}
     - target: {fileID: 7103798453608161969, guid: 30f52a559295383438ec88a8be3f1489, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -5933,7 +5933,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595298751293020454, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
       propertyPath: _startMoveState
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7595298751293020454, guid: da98acd368a45da408d34ca8b0b166b3, type: 3}
       propertyPath: _followTargetTransform

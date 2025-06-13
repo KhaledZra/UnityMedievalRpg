@@ -15,7 +15,7 @@ NavMeshProjectSettings:
     cost: 1
   - name: Side Road
     cost: 3
-  - name: 
+  - name: Training Camp
     cost: 1
   - name: 
     cost: 1

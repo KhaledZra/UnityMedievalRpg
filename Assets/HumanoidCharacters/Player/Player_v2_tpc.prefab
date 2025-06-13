@@ -3101,6 +3101,7 @@ MonoBehaviour:
   <CurrentAttackState>k__BackingField: 0
   WantsToSprint: 0
   WantsToJump: 0
+  WantsToWalk: 0
   _groundLayerMask:
     serializedVersion: 2
     m_Bits: 128
@@ -3117,7 +3118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animator: {fileID: 5607981225796198250}
-  _animationBlendSpeed: 6
+  _animationBlendSpeed: 3
   _playerState: {fileID: 6163989161494538634}
 --- !u!1 &5098851023884237536
 GameObject:
