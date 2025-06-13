@@ -39,14 +39,13 @@ public class NpcAnimationController : MonoBehaviour
     {
         if (actionClip)
         {
-            actionClip.wrapMode = WrapMode.Loop; // ensure the action clip loops
             overrideController["ActionPlaceholder"] = actionClip; // name of state’s original clip
             _animator.SetBool(PlayActionHash, true);
         }
         else // turn off the rest
         {
             _animator.SetBool(PlayActionHash, false);
-            overrideController["ActionPlaceholder"] = placeholderClip; // name of state’s original clip
+            // overrideController["ActionPlaceholder"] = placeholderClip; // name of state’s original clip
         }
     }
 }

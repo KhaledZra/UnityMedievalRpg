@@ -59,29 +59,29 @@ public class NpcController : MonoBehaviour
     [SerializeField, ReadOnly] private PatrolPointActionValues[] _activePatrolPointActionValues;
     [SerializeField, ReadOnly] private PatrolPoint _activePatrolPoint;
 
-    [Space] [Header("States")] [SerializeField]
-    private ENpcAiState _npcAiState = ENpcAiState.Idle;
-
+    [Space] [Header("States")] 
+    [SerializeField] private ENpcAiState _npcAiState = ENpcAiState.Idle;
     [SerializeField, ReadOnly] private ENpcAiState _lastActiveNpcAiState = ENpcAiState.Idle;
 
-    [Space] [Header("Random Patrol")] [SerializeField]
-    private float _randomPatrolDistance = 10f;
+    [Space] [Header("Random Patrol")] 
+    [SerializeField] private float _randomPatrolDistance = 10f;
+    [SerializeField] private bool _patrolAllLayers; // If true, will use all NavMesh areas for random patrol
+    // The name of the NavMesh area to use for random patrol
+    [SerializeField] private string _navmeshLayerName = "Walkable";
 
     [SerializeField, ReadOnly] private Vector3 _randomPatrolDestination;
     [SerializeField] private GameObject _randomPatrolPointPrefab;
 
     [SerializeField, ReadOnly] private GameObject _activeRandomPatrolPoint;
 
-    // The name of the NavMesh area to use for random patrol
-    [SerializeField] private string _navmeshLayerName = "Walkable";
 
-    [Space] [Header("Follow Target")] [SerializeField]
-    private float _followTargetStopDistance = 3f;
+    [Space] [Header("Follow Target")] 
+    [SerializeField] private float _followTargetStopDistance = 3f;
 
     [SerializeField] private Transform _followTargetTransform;
 
-    [Space] [Header("--  Debugging  --")] [SerializeField]
-    private Transform _agentDestinationTransform;
+    [Space] [Header("--  Debugging  --")] 
+    [SerializeField] private Transform _agentDestinationTransform;
 
     [SerializeField] private Vector3 _velocity;
     [SerializeField] private float _velocityNormalizedMagnitude;
@@ -190,6 +190,11 @@ public class NpcController : MonoBehaviour
             int areaIndex = NavMesh.GetAreaFromName(_navmeshLayerName);
             int areaMask = 1 << areaIndex;
 
+            if (_patrolAllLayers)
+            {
+                areaMask = NavMesh.AllAreas;
+            }
+
             _randomPatrolDestination = RandomNavSphere(transform.position, _randomPatrolDistance, areaMask);
             _randomPatrolDestination.y += 1f;
             _activeRandomPatrolPoint =
@@ -267,7 +272,7 @@ public class NpcController : MonoBehaviour
                 transform.rotation.eulerAngles.x,
                 _activePatrolPoint.yRotationDirection,
                 transform.rotation.eulerAngles.z);
-            
+
             _rotationSpeed = _activePatrolPoint.rotationSpeed;
             _hasRotationTarget = true; // Set the rotation target flag
             yield return new WaitForSeconds(_activePatrolPoint.rotationActionDuration);

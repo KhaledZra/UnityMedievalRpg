@@ -14,7 +14,7 @@ NavMeshProjectSettings:
   - name: Main Road
     cost: 1
   - name: Side Road
-    cost: 20
+    cost: 3
   - name: 
     cost: 1
   - name: 
