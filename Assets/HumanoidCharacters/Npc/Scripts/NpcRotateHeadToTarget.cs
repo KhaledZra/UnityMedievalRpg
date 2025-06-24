@@ -1,6 +1,7 @@
 using NaughtyAttributes;
 using UnityEngine;
 
+[RequireComponent(typeof(SphereCollider))]
 public class NpcRotateHeadToTarget : MonoBehaviour
 {
     [SerializeField] private Transform _headTransform;
@@ -87,7 +88,7 @@ public class NpcRotateHeadToTarget : MonoBehaviour
             // Clamp the angle
             float clampedAngle = Mathf.Clamp(angle, -_clampAngle, _clampAngle);
             
-            // Apply the clamped angle to the body rotation
+            // Calculate new target rotation angle based on body forward and clamped angle
             targetRotation = Quaternion.AngleAxis(clampedAngle, Vector3.up) * _bodyTransform.rotation;
             
             // reapply the offset around Y axis since it's been modified

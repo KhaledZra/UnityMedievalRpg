@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(SphereCollider))]
 public class FocusTargetComponent : MonoBehaviour
 {
     private Transform _targetTransform;
