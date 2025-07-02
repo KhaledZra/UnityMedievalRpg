@@ -1,7 +1,9 @@
 using System;
 using _Game.Interfaces;
 using _Game.Structs;
+using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Events;
 
 // TODO: handle delayed input actions
 // TODO: Improve state machine to handle movement states better. keep sprinting and jumping separate from the movement state
@@ -16,6 +18,7 @@ public class PlayerController : MonoBehaviour
     [Header("Components")] 
     [SerializeField] private CharacterController _characterController;
     [SerializeField] private InteractionComponent _interactionComponent;
+    [SerializeField] private CinemachineCamera _talkInteractionCamera;
 
     [SerializeField] private Transform _cameraTransform;
 
@@ -196,6 +199,37 @@ public class PlayerController : MonoBehaviour
     private void OnInteractInput()
     {
         _interactionComponent?.OnInteract();
+    }
+    
+    public void ToggleTalkInteraction(bool enable)
+    {
+        if (_talkInteractionCamera)
+        {
+            _talkInteractionCamera.enabled = enable;
+        }
+        else
+        {
+            Debug.LogWarning("Talk Interaction Camera is not assigned.");
+        }
+        
+        // Switch to UI mode
+        PlayerInputHandler.Instance?.ToggleInputActions(!enable);
+
+        if (_interactionComponent)
+        {
+            // Clear interaction UI
+            _interactionComponent.ToggleInteraction(!enable);
+        }
+        
+        // Toggle talk UI
+        if (enable)
+        {
+            Cursor.lockState = CursorLockMode.Confined;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+        }
     }
 
     private bool RaycastAttack(out RaycastHit raycastHit)

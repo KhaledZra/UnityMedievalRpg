@@ -59,6 +59,18 @@ public class PlayerInputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActi
         
         _playerActions.RemoveCallbacks(this);
     }
+    
+    public void ToggleInputActions(bool enable)
+    {
+        if (enable)
+        {
+            _playerActions.Enable();
+        }
+        else
+        {
+            _playerActions.Disable();
+        }
+    }
 
     public void OnMove(InputAction.CallbackContext context)
     {

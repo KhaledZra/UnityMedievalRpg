@@ -89,6 +89,10 @@ public class NpcController : MonoBehaviour, IInteractable
     [SerializeField, ReadOnly] private bool _hasRotationTarget;
     [SerializeField, ReadOnly] private Quaternion _rotationTarget;
     [SerializeField, ReadOnly] private float _rotationSpeed = 5f;
+    
+    // todo: interaction component stuff
+    [SerializeField] private TalkUIManager _talkUIManager;
+    [SerializeField, ReadOnly] private GameObject _interactor;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -448,6 +452,9 @@ public class NpcController : MonoBehaviour, IInteractable
         // Check if the NPC is in a state that allows interaction but we assume it is always allowed for now
         DebugStopAiMovement();
         
+        // Store the interactor so we know who is interacting with us
+        _interactor = interactor;
+        
         // Face the interactor
         float targetYRotation = Quaternion.LookRotation(interactor.transform.position - transform.position).eulerAngles.y;
         
@@ -457,7 +464,47 @@ public class NpcController : MonoBehaviour, IInteractable
             targetYRotation,
             transform.rotation.eulerAngles.z);
 
-        _rotationSpeed = 5f;
+        _rotationSpeed = 2f;
         _hasRotationTarget = true; // Set the rotation target flag
+        
+        // Tell the player to use the talk angle camera
+        if (interactor.TryGetComponent(out PlayerController playerController))
+        {
+            playerController.ToggleTalkInteraction(true);
+        }
+        
+        // Set the talk UI interactor
+        if (_talkUIManager)
+        {
+            _talkUIManager.SetInteractor(StopInteraction);
+            _talkUIManager.SetTalkUIVisibility(true);
+        }
+    }
+    
+    private void StopInteraction()
+    { 
+        if (_interactor == null) // this should never happen but just in case
+        {
+            Debug.LogWarning("No interactor found to stop interaction.");
+            return;
+        }
+        
+        Debug.Log("Stopping Interact");
+        // Check if the NPC is in a state that allows interaction but we assume it is always allowed for now
+        DebugResumeAiMovement();
+        
+        _hasRotationTarget = false; // Set the rotation target flag
+        
+        // Tell the player to use the talk angle camera
+        if (_interactor.TryGetComponent(out PlayerController playerController))
+        {
+            playerController.ToggleTalkInteraction(false);
+        }
+        
+        // Update the ui visibility
+        if (_talkUIManager)
+        {
+            _talkUIManager.SetTalkUIVisibility(false);
+        }
     }
 }
