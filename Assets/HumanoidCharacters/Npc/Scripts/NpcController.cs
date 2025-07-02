@@ -442,8 +442,22 @@ public class NpcController : MonoBehaviour, IInteractable
         return navHit.position;
     }
 
-    public void Interact()
-    {
+    public void Interact(GameObject interactor)
+    { 
         Debug.Log("Interact");
+        // Check if the NPC is in a state that allows interaction but we assume it is always allowed for now
+        DebugStopAiMovement();
+        
+        // Face the interactor
+        float targetYRotation = Quaternion.LookRotation(interactor.transform.position - transform.position).eulerAngles.y;
+        
+        // Rotate towards the specified direction
+        _rotationTarget = Quaternion.Euler(
+            transform.rotation.eulerAngles.x,
+            targetYRotation,
+            transform.rotation.eulerAngles.z);
+
+        _rotationSpeed = 5f;
+        _hasRotationTarget = true; // Set the rotation target flag
     }
 }

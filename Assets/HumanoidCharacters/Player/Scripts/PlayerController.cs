@@ -13,8 +13,9 @@ public class PlayerController : MonoBehaviour
     private MovementValues _movementValues;
 
     // Component references
-    [Header("Components")] [SerializeField]
-    private CharacterController _characterController;
+    [Header("Components")] 
+    [SerializeField] private CharacterController _characterController;
+    [SerializeField] private InteractionComponent _interactionComponent;
 
     [SerializeField] private Transform _cameraTransform;
 
@@ -70,6 +71,7 @@ public class PlayerController : MonoBehaviour
         PlayerInputHandler.Instance.LeftAttackInputAction -= OnLeftAttackInput;
         PlayerInputHandler.Instance.RightAttackInputAction -= OnRightAttackInput;
         PlayerInputHandler.Instance.ToggleWalkInputAction -= OnToggleWalkInput;
+        PlayerInputHandler.Instance.InteractInputAction -= OnInteractInput;
         
         _inputsInitialized = false;
     }
@@ -190,6 +192,11 @@ public class PlayerController : MonoBehaviour
             PlayerState.WantsToWalk = !PlayerState.WantsToWalk;
         }
     }
+    
+    private void OnInteractInput()
+    {
+        _interactionComponent?.OnInteract();
+    }
 
     private bool RaycastAttack(out RaycastHit raycastHit)
     {
@@ -259,6 +266,7 @@ public class PlayerController : MonoBehaviour
         PlayerInputHandler.Instance.LeftAttackInputAction += OnLeftAttackInput;
         PlayerInputHandler.Instance.RightAttackInputAction += OnRightAttackInput;
         PlayerInputHandler.Instance.ToggleWalkInputAction += OnToggleWalkInput;
+        PlayerInputHandler.Instance.InteractInputAction += OnInteractInput;
         
         // Set inputs initialized to true
         _inputsInitialized = true;

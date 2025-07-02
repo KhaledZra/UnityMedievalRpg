@@ -19,6 +19,7 @@ public class PlayerInputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActi
     public event Action LeftAttackInputAction;
     public event Action RightAttackInputAction;
     public event Action ToggleWalkInputAction;
+    public event Action InteractInputAction;
 
     private void Awake()
     {
@@ -87,7 +88,10 @@ public class PlayerInputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActi
 
     public void OnInteract(InputAction.CallbackContext context)
     {
-        throw new System.NotImplementedException();
+        if (context.performed)
+        {
+            InteractInputAction?.Invoke();
+        }
     }
 
     public void OnCrouch(InputAction.CallbackContext context)
