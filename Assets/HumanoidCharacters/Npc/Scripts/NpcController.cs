@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(NpcAnimationController))]
-public class NpcController : MonoBehaviour
+public class NpcController : MonoBehaviour, IInteractable
 {
     private CapsuleCollider _capsuleCollider;
     private NavMeshAgent _navMeshAgent;
@@ -440,5 +440,10 @@ public class NpcController : MonoBehaviour
         NavMesh.SamplePosition(randomDirection, out NavMeshHit navHit, distance, layermask);
 
         return navHit.position;
+    }
+
+    public void Interact()
+    {
+        Debug.Log("Interact");
     }
 }
