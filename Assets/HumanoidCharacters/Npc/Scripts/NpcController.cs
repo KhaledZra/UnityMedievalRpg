@@ -470,7 +470,7 @@ public class NpcController : MonoBehaviour, IInteractable
         // Tell the player to use the talk angle camera
         if (interactor.TryGetComponent(out PlayerController playerController))
         {
-            playerController.ToggleTalkInteraction(true);
+            playerController.ToggleTalkInteraction(true, gameObject.transform);
         }
         
         // Set the talk UI interactor
@@ -498,7 +498,7 @@ public class NpcController : MonoBehaviour, IInteractable
         // Tell the player to use the talk angle camera
         if (_interactor.TryGetComponent(out PlayerController playerController))
         {
-            playerController.ToggleTalkInteraction(false);
+            playerController.ToggleTalkInteraction(false, null);
         }
         
         // Update the ui visibility

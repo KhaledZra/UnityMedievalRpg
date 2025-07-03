@@ -201,10 +201,19 @@ public class PlayerController : MonoBehaviour
         _interactionComponent?.OnInteract();
     }
     
-    public void ToggleTalkInteraction(bool enable)
+    public void ToggleTalkInteraction(bool enable, Transform targetTransform)
     {
         if (_talkInteractionCamera)
         {
+            if (targetTransform) // Since can be null when disabling
+            {
+                // Set the camera position to the target interactable position
+                Vector3 targetPosition = targetTransform.position;
+                targetPosition += Vector3.up * 1.5f; // Adjust height if needed
+                
+                _talkInteractionCamera.transform.LookAt(targetPosition);
+            }
+            
             _talkInteractionCamera.enabled = enable;
         }
         else
