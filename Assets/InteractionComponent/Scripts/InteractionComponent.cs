@@ -36,19 +36,31 @@ public class InteractionComponent : MonoBehaviour
             {
                 _interactable = null;
                 Ray ray = new Ray(_camera.transform.position, _camera.transform.forward);
+                
+                // todo: remove after debugging
+                Debug.DrawRay(_camera.transform.position, _camera.transform.forward * 10f, Color.yellow, 10f);
 
                 if (Physics.Raycast(ray, out RaycastHit hit, _interactionDistance, _interactionLayerMask))
                 {
-                    // Check if the object has an interaction component & store it
-                    if (!hit.collider.TryGetComponent(out _interactable))
+                    // Checks if the hit point is not behind the interactor
+                    if (gameObject.transform.InverseTransformPoint(hit.point).z >= 0)
                     {
-                        // Reset the interactable and hide the prompt
-                        _playerUIManager?.ShowInteractionPrompt(false);
+                        // Check if the object has an interaction component & store it
+                        if (!hit.collider.TryGetComponent(out _interactable))
+                        {
+                            // Reset the interactable and hide the prompt
+                            _playerUIManager?.ShowInteractionPrompt(false);
+                        }
+                        else
+                        {
+                            // Show the interaction prompt
+                            _playerUIManager?.ShowInteractionPrompt(true);
+                        }
                     }
                     else
                     {
-                        // Show the interaction prompt
-                        _playerUIManager?.ShowInteractionPrompt(true);
+                        // Reset the interactable and hide the prompt
+                        _playerUIManager?.ShowInteractionPrompt(false);
                     }
                 }
                 else

@@ -335,6 +335,81 @@ Transform:
   - {fileID: 8407633339295133516}
   m_Father: {fileID: 5940812060478995892}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &786767531973712104
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7358073369996112258}
+  - component: {fileID: 1882113495914744371}
+  m_Layer: 0
+  m_Name: TalkAngleCamera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7358073369996112258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786767531973712104}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.07115229, y: -0.112171404, z: 0.02796957, w: 0.9907435}
+  m_LocalPosition: {x: 0.8045, y: 0.4532, z: -0.4177}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3851967015197629854}
+  m_LocalEulerAnglesHint: {x: 8.468, y: -12.75, z: 2.286}
+--- !u!114 &1882113495914744371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786767531973712104}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Priority:
+    Enabled: 0
+    m_Value: 0
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 20241001
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 60.000004
+    OrthographicSize: 5
+    NearClipPlane: 0.3
+    FarClipPlane: 700
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
 --- !u!1 &967493958147540730
 GameObject:
   m_ObjectHideFlags: 0
@@ -2975,6 +3050,7 @@ GameObject:
   - component: {fileID: 5515359706254391285}
   - component: {fileID: 6163989161494538634}
   - component: {fileID: 4576640898871356873}
+  - component: {fileID: 6028812954217399985}
   m_Layer: 0
   m_Name: Player_v2_tpc
   m_TagString: Player
@@ -3062,6 +3138,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _movementValues: {fileID: 11400000, guid: 286b651dfc703c246b2ee1cdcee1ad5a, type: 2}
   _characterController: {fileID: 8628802389566004788}
+  _interactionComponent: {fileID: 6028812954217399985}
+  _talkInteractionCamera: {fileID: 1882113495914744371}
   _cameraTransform: {fileID: 3851967015197629854}
   PlayerState: {fileID: 6163989161494538634}
   _attackDistance: 5
@@ -3120,6 +3198,24 @@ MonoBehaviour:
   _animator: {fileID: 5607981225796198250}
   _animationBlendSpeed: 3
   _playerState: {fileID: 6163989161494538634}
+--- !u!114 &6028812954217399985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5095494014328082273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: beffba097968c584296592455aac6e25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _camera: {fileID: 8356045489915418576}
+  _interactionLayerMask:
+    serializedVersion: 2
+    m_Bits: 512
+  _interactionDistance: 5
+  _playerUIManager: {fileID: 0}
 --- !u!1 &5098851023884237536
 GameObject:
   m_ObjectHideFlags: 0
@@ -5386,8 +5482,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7922953165136648032}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 2.842171e-14, z: -0, w: -1}
-  m_LocalPosition: {x: 0.64001465, y: 0.3000002, z: -2}
+  m_LocalRotation: {x: 0, y: 2.842171e-14, z: 0, w: -1}
+  m_LocalPosition: {x: 0.64, y: 0.29999995, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5425,7 +5521,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 700
   field of view: 60.000004
   orthographic: 0
   orthographic size: 5
@@ -5520,7 +5616,7 @@ MonoBehaviour:
     DefaultMode: 2
   DefaultBlend:
     Style: 1
-    Time: 2
+    Time: 1
     CustomCurve:
       serializedVersion: 2
       m_Curve: []
@@ -5560,6 +5656,7 @@ Transform:
   m_Children:
   - {fileID: 3723780677656124482}
   - {fileID: 6134722812973367174}
+  - {fileID: 7358073369996112258}
   m_Father: {fileID: 3662670883257005795}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4445976368293456848
@@ -6155,7 +6252,7 @@ MonoBehaviour:
     FieldOfView: 60.000004
     OrthographicSize: 5
     NearClipPlane: 0.3
-    FarClipPlane: 1000
+    FarClipPlane: 700
     Dutch: 0
     ModeOverride: 0
     PhysicalProperties:
