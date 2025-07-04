@@ -722,7 +722,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _npcMovementValues: {fileID: 11400000, guid: 3f59a71ed9591b24882c185c79412ad8, type: 2}
-  _startMoveState: 2
+  _startMoveState: 1
   _activeMoveState: 2
   _enableAgent: 1
   _enableWaiting: 0
@@ -734,7 +734,7 @@ MonoBehaviour:
   _currentPatrolIndex: 0
   _activePatrolPointActionValues: []
   _activePatrolPoint: {fileID: 0}
-  _npcAiState: 0
+  _npcAiState: 3
   _lastActiveNpcAiState: 0
   _randomPatrolDistance: 10
   _patrolAllLayers: 0
