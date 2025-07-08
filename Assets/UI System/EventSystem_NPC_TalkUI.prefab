@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 500924105256990407}
   - component: {fileID: 212046206446967912}
   - component: {fileID: 2363068145604650213}
+  - component: {fileID: 2960051030271215844}
   m_Layer: 0
   m_Name: EventSystem_NPC_TalkUI
   m_TagString: Untagged
@@ -80,6 +81,20 @@ MonoBehaviour:
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
+--- !u!114 &2960051030271215844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335665687855548271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c28978f80e97cd4793cb848207ddc5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _talkUICanvas: {fileID: 6773500411233523656}
+  _stopInteractionButton: {fileID: 2565201736900735522}
 --- !u!1 &2232797392875088065
 GameObject:
   m_ObjectHideFlags: 0
@@ -229,7 +244,7 @@ GameObject:
   - component: {fileID: 6708193780386980241}
   - component: {fileID: 2565201736900735522}
   m_Layer: 5
-  m_Name: test
+  m_Name: StopInteractionButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

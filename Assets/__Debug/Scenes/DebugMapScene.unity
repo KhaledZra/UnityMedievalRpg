@@ -295,11 +295,6 @@ Transform:
   - {fileID: 94419884}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &101403553 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6773500411233523656, guid: d9132b456a3690247a277a4dabc7547b, type: 3}
-  m_PrefabInstance: {fileID: 1889956988218674276}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &131395335
 GameObject:
   m_ObjectHideFlags: 0
@@ -648,17 +643,6 @@ Transform:
   - {fileID: 378380873}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &152899447 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2565201736900735522, guid: d9132b456a3690247a277a4dabc7547b, type: 3}
-  m_PrefabInstance: {fileID: 1889956988218674276}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &169015516
 GameObject:
   m_ObjectHideFlags: 0
@@ -3503,25 +3487,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c270175c10404d840b299a970840ddd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &747243479 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1335665687855548271, guid: d9132b456a3690247a277a4dabc7547b, type: 3}
+--- !u!114 &747243483 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2960051030271215844, guid: d9132b456a3690247a277a4dabc7547b, type: 3}
   m_PrefabInstance: {fileID: 1889956988218674276}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &747243483
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 747243479}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4c28978f80e97cd4793cb848207ddc5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _talkUICanvas: {fileID: 101403553}
-  _stopInteractionButton: {fileID: 152899447}
 --- !u!114 &772379082 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4943159869368643321, guid: c57f8227d8e512d46a4fb7abd150b965, type: 3}
@@ -5825,17 +5801,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: EventSystem_NPC_TalkUI
       objectReference: {fileID: 0}
-    - target: {fileID: 5066843293888603337, guid: d9132b456a3690247a277a4dabc7547b, type: 3}
-      propertyPath: m_Name
-      value: StopInteractionButton
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1335665687855548271, guid: d9132b456a3690247a277a4dabc7547b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 747243483}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d9132b456a3690247a277a4dabc7547b, type: 3}
 --- !u!4 &2381345859351909979 stripped
 Transform:
