@@ -253,6 +253,7 @@ public class PlayerController : MonoBehaviour
             if (transform.InverseTransformPoint(raycastHit.point).z < 0)
             {
                 Debug.Log("Hit behind the player");
+                Debug.Log(raycastHit.collider.name);
                 return false;
             }
             

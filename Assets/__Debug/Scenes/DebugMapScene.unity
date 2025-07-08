@@ -3557,21 +3557,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5494908702646218498, guid: 2bb564d0aa8dc3741a96edcfa26bb787, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -1.5
-      objectReference: {fileID: 0}
     - target: {fileID: 5926175114209126529, guid: 2bb564d0aa8dc3741a96edcfa26bb787, type: 3}
       propertyPath: m_Name
       value: CubeEnemy (2)
-      objectReference: {fileID: 0}
-    - target: {fileID: 7601077638589315301, guid: 2bb564d0aa8dc3741a96edcfa26bb787, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8607760155796919938, guid: 2bb564d0aa8dc3741a96edcfa26bb787, type: 3}
-      propertyPath: m_Enabled
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5639,6 +5627,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 176787574561395575, guid: 9a772029d334d5343af9d76358cd91dd, type: 3}
+      propertyPath: _attackableLayerMask.m_Bits
+      value: 1024
+      objectReference: {fileID: 0}
     - target: {fileID: 3662670883257005795, guid: 9a772029d334d5343af9d76358cd91dd, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
@@ -6346,6 +6338,10 @@ PrefabInstance:
     - target: {fileID: 1882961021145761269, guid: 2bb564d0aa8dc3741a96edcfa26bb787, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5494908702646218498, guid: 2bb564d0aa8dc3741a96edcfa26bb787, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -5.5
       objectReference: {fileID: 0}
     - target: {fileID: 5926175114209126529, guid: 2bb564d0aa8dc3741a96edcfa26bb787, type: 3}
       propertyPath: m_Name
