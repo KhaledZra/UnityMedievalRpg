@@ -1,0 +1,49 @@
+using UnityEngine;
+
+// [ExecuteInEditMode]
+public class GridGenerator : MonoBehaviour
+{
+    [SerializeField] private GameObject tilePrefab;
+    [SerializeField] private Vector2Int size;
+    [SerializeField] private float offset = 2;
+    
+    public static GridGenerator Instance { get; private set; }
+
+    public GameObject[,] tiles;
+
+    private void Awake()
+    {
+        Instance = this;
+        
+        tiles = new GameObject[size.x, size.y];
+        for (int i = 0; i <= tiles.GetUpperBound(0); i++)
+        {
+            for (int j = 0; j <= tiles.GetUpperBound(1); j++)
+            {
+                Vector3 pos = new Vector3(i, 0, j) * offset;
+                tiles[i, j] = Instantiate(tilePrefab, pos, Quaternion.identity, transform);
+            }
+        }
+    }
+
+    // private void OnEnable()
+    // {
+    //     tiles = new GameObject[size.x, size.y];
+    //     for (int i = 0; i < tiles.GetUpperBound(0); i++)
+    //     {
+    //         for (int j = 0; j < tiles.GetUpperBound(1); j++)
+    //         {
+    //             Vector3 pos = new Vector3(i, 0, j) * offset;
+    //             tiles[i, j] = Instantiate(tilePrefab, pos, Quaternion.identity, transform);
+    //         }
+    //     }
+    // }
+
+    // private void OnDisable()
+    // {
+    //     foreach (GameObject tile in tiles)
+    //     {
+    //         DestroyImmediate(tile);
+    //     }
+    // }
+}
