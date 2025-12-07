@@ -1,13 +1,16 @@
 using System.Collections.Generic;
+using System.Linq;
 using NaughtyAttributes;
 using UnityEngine;
 
 public class PathFinder : MonoBehaviour
 {
     [SerializeField] private Node nodePrefab;
+
     [SerializeField] private GameObject pathPrefab;
-    [SerializeField] private Vector2Int start;
-    [SerializeField] private Vector2Int target;
+
+    // [SerializeField] private Vector2Int start;
+    // [SerializeField] private Vector2Int target;
     [SerializeField] private Color startColor;
     [SerializeField] private Color targetColor;
     [SerializeField] private Color pathColor;
@@ -18,6 +21,9 @@ public class PathFinder : MonoBehaviour
     public Node[,] pathNodes;
 
     private GameObject[,] tiles;
+    private List<GameObject> oldPath;
+    [SerializeField, ReadOnly] private Vector2Int start = new Vector2Int(0, 0);
+    [SerializeField, ReadOnly] private Vector2Int target = new Vector2Int(0, 0);
 
     private void Awake()
     {
@@ -28,8 +34,8 @@ public class PathFinder : MonoBehaviour
     {
         tiles = GridGenerator.Instance.tiles;
 
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
+        // tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
+        // tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
 
         CreatePathNodes();
         UpdatePathNeighbors();
@@ -66,7 +72,7 @@ public class PathFinder : MonoBehaviour
 
                 // Diagonal neighbors (corners)
                 if (canMoveSideways is false) continue;
-                
+
                 if (i + 1 <= tiles.GetUpperBound(0) && j + 1 <= tiles.GetUpperBound(1)) // NorthEast
                     pathNodes[i, j].Neihbours.Add(pathNodes[i + 1, j + 1]);
                 if (i - 1 >= 0 && j + 1 <= tiles.GetUpperBound(1)) // NorthWest
@@ -79,16 +85,46 @@ public class PathFinder : MonoBehaviour
         }
     }
 
-    [Button]
-    private void CreatePath()
-    {
-        List<Node> path =
-            AStarManager.Instance.GeneratePath(pathNodes[start.x, start.y], pathNodes[target.x, target.y]);
+    // [Button]
+    // private void CreatePath()
+    // {
+    //     List<Node> path =
+    //         AStarManager.Instance.GeneratePath(pathNodes[start.x, start.y], pathNodes[target.x, target.y]);
+    //
+    //     foreach (Node n in path)
+    //     {
+    //         Instantiate(pathPrefab, n.transform.position, Quaternion.identity)
+    //             .GetComponent<Renderer>().material.color = pathColor;
+    //     }
+    // }
 
-        foreach (Node n in path)
+    [Button]
+    private void CreateRandomPath()
+    {
+        // Clean up if any old path
+        oldPath.ForEach(Destroy);
+        oldPath.Clear();
+        tiles[start.x, start.y].GetComponent<Renderer>().material.color = Color.grey;
+        tiles[target.x, target.y].GetComponent<Renderer>().material.color = Color.grey;
+
+        // Get new random targets
+        start = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
+            Random.Range(0, tiles.GetUpperBound(1)));
+        target = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
+            Random.Range(0, tiles.GetUpperBound(1)));
+        tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
+        tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
+        
+        // Generate new path
+        List<Node> newPath =
+            AStarManager.Instance.GeneratePath(
+                pathNodes[start.x, start.y],
+                pathNodes[target.x, target.y]);
+
+        foreach (Node n in newPath)
         {
-            Instantiate(pathPrefab, n.transform.position, Quaternion.identity)
-                .GetComponent<Renderer>().material.color = pathColor;
+            oldPath.Add(Instantiate(pathPrefab, n.transform.position, Quaternion.identity));
+            oldPath.Last().GetComponent<Renderer>().material.color = pathColor;
         }
     }
 }

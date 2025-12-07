@@ -22,6 +22,7 @@ public class GridGenerator : MonoBehaviour
             {
                 Vector3 pos = new Vector3(i, 0, j) * offset;
                 tiles[i, j] = Instantiate(tilePrefab, pos, Quaternion.identity, transform);
+                tiles[i, j].GetComponent<Renderer>().material.color = Color.gray;
             }
         }
     }
