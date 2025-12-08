@@ -21,7 +21,7 @@ public class PathFinder : MonoBehaviour
     public Node[,] pathNodes;
 
     private GameObject[,] tiles;
-    private List<GameObject> oldPath;
+    private List<GameObject> oldPath = new();
     [SerializeField, ReadOnly] private Vector2Int start = new Vector2Int(0, 0);
     [SerializeField, ReadOnly] private Vector2Int target = new Vector2Int(0, 0);
 
