@@ -26,6 +26,23 @@ public class GridGenerator : MonoBehaviour
             }
         }
     }
+    
+    public GameObject this[Vector2Int v] => this[v.x, v.y];
+
+    public GameObject this[int x, int y] => WithinBounds(x, y) ? tiles[x, y] : null;
+    
+    public bool WithinBounds(Vector2Int v)
+    {
+        return WithinBounds(v.x, v.y);
+    }
+
+    public bool WithinBounds(int x, int y)
+    {
+        return x >= 0 &&
+               y >= 0 &&
+               x < size.x &&
+               y < size.y;
+    }
 
     // private void OnEnable()
     // {

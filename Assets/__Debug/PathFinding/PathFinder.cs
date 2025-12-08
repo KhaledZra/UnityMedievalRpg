@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using NaughtyAttributes;
 using UnityEngine;
+using Quaternion = UnityEngine.Quaternion;
+using Vector3 = UnityEngine.Vector3;
 
 public class PathFinder : MonoBehaviour
 {
     [SerializeField] private Node nodePrefab;
-
     [SerializeField] private GameObject pathPrefab;
 
     // [SerializeField] private Vector2Int start;
@@ -36,9 +38,6 @@ public class PathFinder : MonoBehaviour
 
         // tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
         // tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
-
-        CreatePathNodes();
-        UpdatePathNeighbors();
     }
 
     private void CreatePathNodes()
@@ -49,11 +48,21 @@ public class PathFinder : MonoBehaviour
         {
             for (int j = 0; j <= tiles.GetUpperBound(1); j++)
             {
-                pathNodes[i, j] =
-                    Instantiate(nodePrefab,
-                        GridGenerator.Instance.tiles[i, j].transform.position,
-                        Quaternion.identity,
-                        transform);
+                // Incase it's missing or null
+                if (tiles[i, j] == null) continue;
+                
+                // Check if we are hitting a blockedPath
+                Collider[] cols = Physics.OverlapBox(tiles[i, j].transform.position, Vector3.one,
+                    Quaternion.identity, 1 << 11);
+                    
+                if (cols.Length == 0)
+                {
+                    pathNodes[i, j] =
+                        Instantiate(nodePrefab,
+                            GridGenerator.Instance.tiles[i, j].transform.position,
+                            Quaternion.identity,
+                            transform);
+                }
             }
         }
     }
@@ -64,6 +73,8 @@ public class PathFinder : MonoBehaviour
         {
             for (int j = 0; j <= tiles.GetUpperBound(1); j++)
             {
+                if (tiles[i, j] == null) continue;
+                
                 // Cardinal Neighbors
                 if (j + 1 <= tiles.GetUpperBound(1)) pathNodes[i, j].Neihbours.Add(pathNodes[i, j + 1]); // North
                 if (j - 1 >= 0) pathNodes[i, j].Neihbours.Add(pathNodes[i, j - 1]); // South
@@ -99,6 +110,22 @@ public class PathFinder : MonoBehaviour
     // }
 
     [Button]
+    private void GenerateNavMesh()
+    {
+        // Clean up old nav mesh
+        if (pathNodes != null)
+        {
+            foreach (Node node in pathNodes) Destroy(node);
+            pathNodes = null;
+        }
+
+
+        CreatePathNodes();
+        UpdatePathNeighbors();
+        transform.position = Vector3.up / 2;
+    }
+
+    [Button]
     private void CreateRandomPath()
     {
         // Clean up if any old path
@@ -114,7 +141,7 @@ public class PathFinder : MonoBehaviour
             Random.Range(0, tiles.GetUpperBound(1)));
         tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
         tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
-        
+
         // Generate new path
         List<Node> newPath =
             AStarManager.Instance.GeneratePath(

@@ -17,7 +17,7 @@ TagManager:
   - Raycast
   - Interactable
   - Attackable
-  - 
+  - BlockedPath
   - 
   - 
   - 

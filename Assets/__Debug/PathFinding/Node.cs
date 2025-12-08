@@ -19,7 +19,10 @@ public class Node : MonoBehaviour
         Gizmos.color = Color.green;
         foreach (Node node in Neihbours)
         {
-            Gizmos.DrawLine(transform.position, node.transform.position);
+            if (node != null)
+            {
+                Gizmos.DrawLine(transform.position, node.transform.position);
+            }
         }
     }
 }
