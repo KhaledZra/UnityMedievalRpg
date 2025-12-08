@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -27,6 +28,23 @@ public class PathFinder : MonoBehaviour
     [SerializeField, ReadOnly] private Vector2Int start = new Vector2Int(0, 0);
     [SerializeField, ReadOnly] private Vector2Int target = new Vector2Int(0, 0);
 
+    public Node this[Vector2Int v] => this[v.x, v.y];
+
+    public Node this[int x, int y] => WithinBounds(x, y) ? pathNodes[x, y] : null;
+
+    public bool WithinBounds(Vector2Int v)
+    {
+        return WithinBounds(v.x, v.y);
+    }
+
+    public bool WithinBounds(int x, int y)
+    {
+        return x >= 0 &&
+               y >= 0 &&
+               x < tiles.GetUpperBound(0) + 1 &&
+               y < tiles.GetUpperBound(1) + 1;
+    }
+
     private void Awake()
     {
         Instance = this;
@@ -36,8 +54,7 @@ public class PathFinder : MonoBehaviour
     {
         tiles = GridGenerator.Instance.tiles;
 
-        // tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
-        // tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
+        StartCoroutine(UpdateNavMesh());
     }
 
     private void CreatePathNodes()
@@ -50,11 +67,11 @@ public class PathFinder : MonoBehaviour
             {
                 // Incase it's missing or null
                 if (tiles[i, j] == null) continue;
-                
+
                 // Check if we are hitting a blockedPath
                 Collider[] cols = Physics.OverlapBox(tiles[i, j].transform.position, Vector3.one,
                     Quaternion.identity, 1 << 11);
-                    
+
                 if (cols.Length == 0)
                 {
                     pathNodes[i, j] =
@@ -74,24 +91,29 @@ public class PathFinder : MonoBehaviour
             for (int j = 0; j <= tiles.GetUpperBound(1); j++)
             {
                 if (tiles[i, j] == null) continue;
-                
-                // Cardinal Neighbors
-                if (j + 1 <= tiles.GetUpperBound(1)) pathNodes[i, j].Neihbours.Add(pathNodes[i, j + 1]); // North
-                if (j - 1 >= 0) pathNodes[i, j].Neihbours.Add(pathNodes[i, j - 1]); // South
-                if (i + 1 <= tiles.GetUpperBound(0)) pathNodes[i, j].Neihbours.Add(pathNodes[i + 1, j]); // East
-                if (i - 1 >= 0) pathNodes[i, j].Neihbours.Add(pathNodes[i - 1, j]); // West
+                if (this[i, j] == null) continue;
+
+                List<Node> potentialConnections = new List<Node>
+                {
+                    this[i, j + 1], // North
+                    this[i, j - 1], // South
+                    this[i + 1, j], // East
+                    this[i - 1, j], // West
+                };
 
                 // Diagonal neighbors (corners)
-                if (canMoveSideways is false) continue;
+                if (canMoveSideways)
+                {
+                    potentialConnections.AddRange(new[]
+                    {
+                        this[i + 1, j + 1], // NorthEast
+                        this[i - 1, j + 1], // NorthWest
+                        this[i + 1, j - 1], // SouthEast
+                        this[i - 1, j - 1], // SouthWest
+                    });
+                }
 
-                if (i + 1 <= tiles.GetUpperBound(0) && j + 1 <= tiles.GetUpperBound(1)) // NorthEast
-                    pathNodes[i, j].Neihbours.Add(pathNodes[i + 1, j + 1]);
-                if (i - 1 >= 0 && j + 1 <= tiles.GetUpperBound(1)) // NorthWest
-                    pathNodes[i, j].Neihbours.Add(pathNodes[i - 1, j + 1]);
-                if (i + 1 <= tiles.GetUpperBound(0) && j - 1 >= 0) // SouthEast
-                    pathNodes[i, j].Neihbours.Add(pathNodes[i + 1, j - 1]);
-                if (i - 1 >= 0 && j - 1 >= 0) // SouthWest
-                    pathNodes[i, j].Neihbours.Add(pathNodes[i - 1, j - 1]);
+                pathNodes[i, j].Neihbours = potentialConnections.Where(node => node != null).ToList();
             }
         }
     }
@@ -109,14 +131,38 @@ public class PathFinder : MonoBehaviour
     //     }
     // }
 
+    private IEnumerator UpdateNavMesh()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(1f);
+        
+            if (pathNodes != null)
+            {
+                foreach (Node n in pathNodes)
+                {
+                    if (n == null) continue;
+                    Destroy(n.gameObject);
+                }
+            }
+            
+            transform.position = Vector3.zero;
+            CreatePathNodes();
+            UpdatePathNeighbors();
+            transform.position = Vector3.up / 2;
+        }
+    }
+
     [Button]
     private void GenerateNavMesh()
     {
-        // Clean up old nav mesh
         if (pathNodes != null)
         {
-            foreach (Node node in pathNodes) Destroy(node);
-            pathNodes = null;
+            foreach (Node n in pathNodes)
+            {
+                if (n == null) continue;
+                Destroy(n.gameObject);
+            }
         }
 
 
@@ -147,6 +193,8 @@ public class PathFinder : MonoBehaviour
             AStarManager.Instance.GeneratePath(
                 pathNodes[start.x, start.y],
                 pathNodes[target.x, target.y]);
+
+        if (newPath == null) return;
 
         foreach (Node n in newPath)
         {

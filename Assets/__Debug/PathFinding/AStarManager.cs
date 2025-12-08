@@ -16,8 +16,14 @@ public class AStarManager : MonoBehaviour
         List<Node> openNodes = new List<Node>();
         HashSet<Node> closedNodes = new HashSet<Node>();
 
+        if (start == null || goal == null)
+        {
+            return null;
+        }
+
         foreach (Node pathNode in PathFinder.Instance.pathNodes)
         {
+            if (pathNode == null) continue;
             pathNode.gScore = float.MaxValue;
         }
 
@@ -54,6 +60,7 @@ public class AStarManager : MonoBehaviour
 
                 while (currentNode != start)
                 {
+                    
                     currentNode = currentNode.Parent;
                     path.Add(currentNode);
                 }
