@@ -517,7 +517,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilePrefab: {fileID: 4218948907535921202, guid: be70a60e4e6e8984ab80f07e3220d5a7, type: 3}
-  size: {x: 20, y: 20}
+  size: {x: 40, y: 40}
   offset: 1
 --- !u!1 &767826597
 GameObject:
@@ -637,7 +637,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1247159269}
   - component: {fileID: 1247159270}
-  - component: {fileID: 1247159271}
   m_Layer: 11
   m_Name: PathFinder
   m_TagString: Untagged
@@ -680,18 +679,6 @@ MonoBehaviour:
   canMoveSideways: 1
   start: {x: 0, y: 0}
   target: {x: 5, y: 8}
---- !u!114 &1247159271
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1247159267}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 213acf5b81b143d5885d336f77089d6b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1560116174
 GameObject:
   m_ObjectHideFlags: 0
