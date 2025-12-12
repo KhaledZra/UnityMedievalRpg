@@ -8,7 +8,6 @@ using Vector3 = UnityEngine.Vector3;
 
 public class PathFinder : MonoBehaviour
 {
-    
     [SerializeField] private Node nodePrefab;
     [SerializeField] private GameObject pathPrefab;
 
@@ -17,6 +16,7 @@ public class PathFinder : MonoBehaviour
     [SerializeField] private Color startColor;
     [SerializeField] private Color targetColor;
     [SerializeField] private Color pathColor;
+    [SerializeField] private Color visitedColor;
     [SerializeField] public bool canMoveSideways = true;
 
     public static PathFinder Instance { get; private set; }
@@ -25,12 +25,14 @@ public class PathFinder : MonoBehaviour
 
     private GameObject[,] tiles;
     private List<GameObject> oldPath = new();
-    
+
     [SerializeField, ReadOnly] private Vector2Int start = new(0, 0);
     [SerializeField, ReadOnly] private Vector2Int target = new(0, 0);
 
-    public Node this[Vector2Int v] => this[v.x, v.y];
+    [Space, SerializeField] private PathFindingManagers.Heuristics heuristic;
 
+
+    public Node this[Vector2Int v] => this[v.x, v.y];
     public Node this[int x, int y] => WithinBounds(x, y) ? pathNodes[x, y] : null;
 
     public bool WithinBounds(Vector2Int v)
@@ -56,7 +58,7 @@ public class PathFinder : MonoBehaviour
         tiles = GridGenerator.Instance.tiles;
 
         // StartCoroutine(UpdateNavMesh());
-        
+
         if (pathNodes != null)
         {
             foreach (Node n in pathNodes)
@@ -65,7 +67,7 @@ public class PathFinder : MonoBehaviour
                 Destroy(n.gameObject);
             }
         }
-            
+
         transform.position = Vector3.zero;
         CreatePathNodes();
         UpdatePathNeighbors();
@@ -94,7 +96,7 @@ public class PathFinder : MonoBehaviour
                             GridGenerator.Instance.tiles[i, j].transform.position,
                             Quaternion.identity,
                             transform);
-                    
+
                     pathNodes[i, j].Coordinates = new Vector2Int(i, j);
                 }
             }
@@ -140,7 +142,7 @@ public class PathFinder : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1f);
-        
+
             if (pathNodes != null)
             {
                 foreach (Node n in pathNodes)
@@ -149,7 +151,7 @@ public class PathFinder : MonoBehaviour
                     Destroy(n.gameObject);
                 }
             }
-            
+
             transform.position = Vector3.zero;
             CreatePathNodes();
             UpdatePathNeighbors();
@@ -169,7 +171,7 @@ public class PathFinder : MonoBehaviour
             }
         }
 
-
+        transform.position = Vector3.zero;
         CreatePathNodes();
         UpdatePathNeighbors();
         transform.position = Vector3.up / 2;
@@ -193,15 +195,18 @@ public class PathFinder : MonoBehaviour
         tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
 
         // Generate new path
+        HashSet<Node> visited = new HashSet<Node>();
         List<Node> newPath = PathFindingManagers.AstarPath(
-                pathNodes[start.x, start.y],
-                pathNodes[target.x, target.y]);
+            pathNodes[start.x, start.y],
+            pathNodes[target.x, target.y],
+            heuristic,
+            visited);
 
         if (newPath == null) return;
-        
-        StartCoroutine(GeneratePath(newPath));
+
+        StartCoroutine(GeneratePath(newPath, visited));
     }
-    
+
     [Button]
     private void Dijkstra()
     {
@@ -220,15 +225,19 @@ public class PathFinder : MonoBehaviour
         tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
 
         // Generate new path
+        HashSet<Node> visited = new HashSet<Node>();
+
         List<Node> newPath = PathFindingManagers.DijkstraPath(
             pathNodes[start.x, start.y],
-            pathNodes[target.x, target.y]);
+            pathNodes[target.x, target.y],
+            heuristic,
+            visited);
 
         if (newPath == null) return;
-        
-        StartCoroutine(GeneratePath(newPath));
+
+        StartCoroutine(GeneratePath(newPath, visited));
     }
-    
+
     [Button]
     private void BFS()
     {
@@ -245,16 +254,18 @@ public class PathFinder : MonoBehaviour
             Random.Range(0, tiles.GetUpperBound(1)));
         tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
         tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
-        
+
+        HashSet<Node> visited = new HashSet<Node>();
+
         List<Node> newPath = PathFindingManagers.BreadthFirstSearch(
-                pathNodes[start.x, start.y],
-                pathNodes[target.x, target.y]);
+            pathNodes[start.x, start.y],
+            pathNodes[target.x, target.y], visited);
 
         if (newPath == null) return;
-        
-        StartCoroutine(GeneratePath(newPath));
+
+        StartCoroutine(GeneratePath(newPath, visited));
     }
-    
+
     [Button]
     private void FloodFill()
     {
@@ -271,21 +282,32 @@ public class PathFinder : MonoBehaviour
             Random.Range(0, tiles.GetUpperBound(1)));
         tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
         tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
-        
+
         List<Node> newPath = PathFindingManagers.FloodFillPath(
             pathNodes[start.x, start.y]);
 
         if (newPath == null) return;
-        
+
         StartCoroutine(GeneratePath(newPath));
     }
 
-    IEnumerator GeneratePath(List<Node> path)
+    IEnumerator GeneratePath(List<Node> path, HashSet<Node> visited = null)
     {
         foreach (Node p in path)
         {
             oldPath.Add(Instantiate(pathPrefab, p.transform.position, Quaternion.identity));
             oldPath.Last().GetComponent<Renderer>().material.color = pathColor;
+
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        if (visited == null) yield break;
+
+        foreach (Node p in visited)
+        {
+            oldPath.Add(Instantiate(pathPrefab, p.transform.position, Quaternion.identity));
+            oldPath.Last().GetComponent<Renderer>().material.color = visitedColor;
+
             yield return new WaitForSeconds(0.01f);
         }
     }

@@ -43,25 +43,4 @@ public class GridGenerator : MonoBehaviour
                x < size.x &&
                y < size.y;
     }
-
-    // private void OnEnable()
-    // {
-    //     tiles = new GameObject[size.x, size.y];
-    //     for (int i = 0; i < tiles.GetUpperBound(0); i++)
-    //     {
-    //         for (int j = 0; j < tiles.GetUpperBound(1); j++)
-    //         {
-    //             Vector3 pos = new Vector3(i, 0, j) * offset;
-    //             tiles[i, j] = Instantiate(tilePrefab, pos, Quaternion.identity, transform);
-    //         }
-    //     }
-    // }
-
-    // private void OnDisable()
-    // {
-    //     foreach (GameObject tile in tiles)
-    //     {
-    //         DestroyImmediate(tile);
-    //     }
-    // }
 }

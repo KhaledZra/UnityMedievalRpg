@@ -675,10 +675,12 @@ MonoBehaviour:
   pathPrefab: {fileID: 8009570081157066540, guid: c614e82ebad9dfa4d96feba010a93c7d, type: 3}
   startColor: {r: 1, g: 0, b: 0, a: 1}
   targetColor: {r: 0, g: 0.09131837, b: 1, a: 1}
-  pathColor: {r: 1, g: 0.8217132, b: 0, a: 0}
+  pathColor: {r: 0.8937168, g: 0, b: 1, a: 0}
+  visitedColor: {r: 1, g: 0.8235295, b: 0, a: 0}
   canMoveSideways: 1
   start: {x: 0, y: 0}
   target: {x: 5, y: 8}
+  heuristic: 3
 --- !u!1 &1560116174
 GameObject:
   m_ObjectHideFlags: 0

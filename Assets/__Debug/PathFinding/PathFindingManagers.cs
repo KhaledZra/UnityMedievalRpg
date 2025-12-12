@@ -4,6 +4,14 @@ using UnityEngine;
 
 public static class PathFindingManagers
 {
+    public enum Heuristics
+    {
+        Manhattan,
+        Chebsyshev,
+        Octile,
+        Euclidean
+    }
+
     // Custom comparer for SortedSet
     private class TileComparer : IComparer<Node>
     {
@@ -11,17 +19,17 @@ public static class PathFindingManagers
         {
             float f = a.FScore() - b.FScore();
             if (f < 0) return -1;
-            if (f > 0) return 1; 
-            
+            if (f > 0) return 1;
+
             // Dupe check
             return a.GetHashCode().CompareTo(b.GetHashCode());
         }
     }
-    
-    public static List<Node> AstarPath(Node start, Node goal)
+
+    public static List<Node> AstarPath(Node start, Node goal, Heuristics heuristic, HashSet<Node> searchArea = null)
     {
         if (start == null || goal == null) return null;
-        
+
         // SortedSet with custom TileComparer. Basically Temu PriorityQueue
         SortedSet<Node> openNodes = new SortedSet<Node>(new TileComparer());
         HashSet<Node> closedNodes = new HashSet<Node>();
@@ -34,7 +42,7 @@ public static class PathFindingManagers
         }
 
         start.gScore = 0;
-        start.hScore = Vector3.Distance(start.transform.position, goal.transform.position);
+        start.hScore = CalculateHeuristic(start, goal, heuristic);
 
         openNodes.Add(start);
 
@@ -61,7 +69,10 @@ public static class PathFindingManagers
                 }
 
                 path.Reverse();
-                path.AddRange(closedNodes);
+
+                // Include search area if we want it
+                searchArea?.UnionWith(closedNodes.Except(path));
+
                 return path;
             }
 
@@ -70,18 +81,17 @@ public static class PathFindingManagers
                 if (neighbor == null) continue;
                 if (closedNodes.Contains(neighbor)) continue;
 
-                float heldGScore = currentNode.gScore +
-                                   Vector3.Distance(currentNode.transform.position, neighbor.transform.position);
+                float heldGScore = currentNode.gScore + CalculateHeuristic(currentNode, neighbor, heuristic);
 
                 if (heldGScore < neighbor.gScore)
                 {
                     // Remove since we are changing values
                     if (openNodes.Contains(neighbor)) openNodes.Remove(neighbor);
-                    
+
                     neighbor.Parent = currentNode;
                     neighbor.gScore = heldGScore;
-                    neighbor.hScore = Vector3.Distance(neighbor.transform.position, goal.transform.position);
-                    
+                    neighbor.hScore = CalculateHeuristic(neighbor, goal, heuristic);
+
                     // Add back so it's sorted
                     openNodes.Add(neighbor);
                 }
@@ -121,7 +131,7 @@ public static class PathFindingManagers
         return closedNodes.ToList();
     }
 
-    public static List<Node> BreadthFirstSearch(Node start, Node goal)
+    public static List<Node> BreadthFirstSearch(Node start, Node goal, HashSet<Node> searchArea = null)
     {
         if (start == null || goal == null) return new List<Node>();
 
@@ -138,7 +148,8 @@ public static class PathFindingManagers
             if (currentNode == goal)
             {
                 List<Node> path = CreatePath(currentNode, start);
-                path.AddRange(closedNodes);
+                // Include search area if we want it
+                searchArea?.UnionWith(closedNodes.Except(path));
                 return path;
             }
 
@@ -157,7 +168,7 @@ public static class PathFindingManagers
         return new List<Node>();
     }
 
-    public static List<Node> DijkstraPath(Node start, Node goal)
+    public static List<Node> DijkstraPath(Node start, Node goal, Heuristics heuristic, HashSet<Node> searchArea = null)
     {
         if (start == null || goal == null) return new List<Node>();
 
@@ -184,7 +195,10 @@ public static class PathFindingManagers
             if (currentNode == goal)
             {
                 List<Node> path = CreatePath(currentNode, start);
-                path.AddRange(closedNodes);
+
+                // Include search area if we want it
+                searchArea?.UnionWith(closedNodes.Except(path));
+
                 return path;
             }
 
@@ -192,17 +206,17 @@ public static class PathFindingManagers
             {
                 if (neighbor == null) continue; // node can be out of bounds/wall/idk
                 if (closedNodes.Contains(neighbor)) continue; // it's already been marked
-                
-                float heldGScore = currentNode.gScore +
-                                   Vector3.Distance(currentNode.transform.position, neighbor.transform.position);
+
+                float heldGScore =
+                    currentNode.gScore + CalculateHeuristic(currentNode, neighbor, heuristic);
 
                 if (heldGScore < neighbor.gScore)
                 {
-                    if (openNodes.Contains(neighbor))  openNodes.Remove(neighbor);
-                    
+                    if (openNodes.Contains(neighbor)) openNodes.Remove(neighbor);
+
                     neighbor.Parent = currentNode;
                     neighbor.gScore = heldGScore;
-                    
+
                     openNodes.Add(neighbor);
                 }
             }
@@ -225,7 +239,7 @@ public static class PathFindingManagers
 
         if (PathFinder.Instance.canMoveSideways)
         {
-            directions.AddRange(new []
+            directions.AddRange(new[]
             {
                 // Diagonal
                 PathFinder.Instance[node.Coordinates + Vector2Int.up + Vector2Int.right], // NorthEast
@@ -234,7 +248,7 @@ public static class PathFindingManagers
                 PathFinder.Instance[node.Coordinates + Vector2Int.down + Vector2Int.left], // SouthWest
             });
         }
-        
+
         return directions;
     }
 
@@ -251,4 +265,63 @@ public static class PathFindingManagers
         path.Reverse();
         return path;
     }
+
+    private static float CalculateHeuristic(Node start, Node goal, Heuristics heuristic)
+    {
+        return heuristic switch
+        {
+            Heuristics.Euclidean => Euclidean(start, goal),
+            Heuristics.Manhattan => Manhattan(start, goal),
+            Heuristics.Chebsyshev => Chebsyshev(start, goal),
+            Heuristics.Octile => Octile(start, goal),
+            _ => 0
+        };
+    }
+
+
+    #region Heuristics
+
+    private static float Euclidean(Node start, Node goal)
+    {
+        int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
+        int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
+
+        int cardinal = 10;
+
+        return cardinal * Mathf.Sqrt(dx * dx + dy * dy);
+    }
+
+    private static float Manhattan(Node start, Node goal)
+    {
+        int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
+        int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
+
+        int cardinal = 10;
+
+        return cardinal * (dx + dy);
+    }
+
+    private static float Chebsyshev(Node start, Node goal)
+    {
+        int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
+        int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
+
+        int cardinal = 10;
+        int diagonal = 10;
+
+        return cardinal * (dx + dy) + (diagonal - 2 * cardinal) * Mathf.Min(dx, dy);
+    }
+
+    private static float Octile(Node start, Node goal)
+    {
+        int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
+        int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
+
+        int cardinal = 10;
+        int diagonal = 14;
+
+        return diagonal * Mathf.Min(dx, dy) + cardinal * (Mathf.Max(dx, dy) - Mathf.Min(dx, dy));
+    }
+
+    #endregion
 }
