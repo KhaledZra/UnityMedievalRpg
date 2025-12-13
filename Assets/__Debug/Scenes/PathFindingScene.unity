@@ -719,7 +719,7 @@ MonoBehaviour:
     m_Bits: 2048
   canMoveSideways: 1
   canMoveVertical: 1
-  heuristic: 0
+  heuristic: 3
 --- !u!1 &1560116174
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NaughtyAttributes;
 using UnityEngine;
 using Quaternion = UnityEngine.Quaternion;
@@ -227,11 +228,11 @@ public class PathFinder : MonoBehaviour
     {
         PreSetupPathFinding();
 
-        StartCoroutine(PathFindingManagers.AstarPath(
+        _ = PathFindingManagers.AstarPath(
             pathNodes[start.x, start.y, start.z],
             pathNodes[target.x, target.y, target.z],
             heuristic,
-            PathCallBack));
+            PathCallBack);
     }
 
     [Button]
@@ -239,10 +240,10 @@ public class PathFinder : MonoBehaviour
     {
         PreSetupPathFinding();
 
-        StartCoroutine(PathFindingManagers.DijkstraPath(
+        _ = PathFindingManagers.DijkstraPath(
             pathNodes[start.x, start.y, start.z],
             pathNodes[target.x, target.y, target.z],
-            heuristic, PathCallBack));
+            heuristic, PathCallBack);
     }
 
     [Button]
@@ -250,10 +251,10 @@ public class PathFinder : MonoBehaviour
     {
         PreSetupPathFinding();
 
-        StartCoroutine(PathFindingManagers.BreadthFirstSearch(
+        _ = PathFindingManagers.BreadthFirstSearch(
             pathNodes[start.x, start.y, start.z],
             pathNodes[target.x, target.y, target.z],
-            PathCallBack));
+            PathCallBack);
     }
 
     [Button]
@@ -261,8 +262,16 @@ public class PathFinder : MonoBehaviour
     {
         PreSetupPathFinding();
         
-        StartCoroutine(PathFindingManagers.FloodFillPath(
-            pathNodes[start.x, start.y, start.z], PathCallBack));
+        _ = PathFindingManagers.FloodFillPathAsync(
+            pathNodes[start.x, start.y, start.z], PathCallBack);
+    }
+    
+    private IEnumerator RunAsync(Task task) // not used but good to have
+    {
+        while (!task.IsCompleted)
+            yield return null;
+        if (task.Exception != null)
+            throw task.Exception;
     }
 
     private void PathCallBack(List<Node> path, HashSet<Node> visited)
