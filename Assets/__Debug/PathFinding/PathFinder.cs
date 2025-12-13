@@ -52,6 +52,7 @@ public class PathFinder : MonoBehaviour
 
 
     public Node this[Vector3Int v] => this[v.x, v.y, v.z];
+    public Node this[PathFindingManagers.VInt3 v] => this[v.x, v.y, v.z];
     public Node this[int x, int y, int z] => WithinBounds(x, y, z) ? pathNodes[x, y, z] : null;
 
     public bool WithinBounds(Vector3Int v)

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public static class PathFindingManagers
 {
@@ -28,7 +27,38 @@ public static class PathFindingManagers
         }
     }
 
-    private static int _batchWorkCount = 10;
+    // Custom VInt3 struct
+    public struct VInt3
+    {
+        public readonly int x;
+        public readonly int y;
+        public readonly int z;
+
+        public VInt3(int x, int y, int z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public static VInt3 operator +(VInt3 a, VInt3 b) => new(a.x + b.x, a.y + b.y, a.z + b.z);
+        public static VInt3 operator -(VInt3 a, VInt3 b) => new(a.x - b.x, a.y - b.y, a.z - b.z);
+
+        public static readonly VInt3 Forward = new(0, 0, 1);
+        public static readonly VInt3 Back = new(0, 0, -1);
+        public static readonly VInt3 Right = new(1, 0, 0);
+        public static readonly VInt3 Left = new(-1, 0, 0);
+        public static readonly VInt3 Up = new(0, 1, 0);
+        public static readonly VInt3 Down = new(0, -1, 0);
+
+        // Diagonals
+        public static readonly VInt3 ForwardRight = new(1, 0, 1);
+        public static readonly VInt3 ForwardLeft = new(-1, 0, 1);
+        public static readonly VInt3 BackRight = new(1, 0, -1);
+        public static readonly VInt3 BackLeft = new(-1, 0, -1);
+    }
+
+    private static readonly int _batchWorkCount = 10;
 
     #region PathFindingAlgorithms
 
@@ -255,13 +285,14 @@ public static class PathFindingManagers
 
     private static List<Node> GetNeighbours(Node node)
     {
+        VInt3 currentCoord = new VInt3(node.Coordinates.x, node.Coordinates.y, node.Coordinates.z);
         HashSet<Node> directions = new()
         {
             // Cardinal Direction
-            PathFinder.Instance[node.Coordinates + Vector3Int.forward], // North
-            PathFinder.Instance[node.Coordinates + Vector3Int.right], // east
-            PathFinder.Instance[node.Coordinates + Vector3Int.back], // south
-            PathFinder.Instance[node.Coordinates + Vector3Int.left], // west
+            PathFinder.Instance[currentCoord + VInt3.Forward], // North
+            PathFinder.Instance[currentCoord + VInt3.Right], // east
+            PathFinder.Instance[currentCoord + VInt3.Back], // south
+            PathFinder.Instance[currentCoord + VInt3.Left], // west
         };
 
         if (PathFinder.Instance.canMoveSideways)
@@ -269,10 +300,10 @@ public static class PathFindingManagers
             directions.UnionWith(new[]
             {
                 // Diagonal
-                PathFinder.Instance[node.Coordinates + Vector3Int.forward + Vector3Int.right], // NorthEast
-                PathFinder.Instance[node.Coordinates + Vector3Int.forward + Vector3Int.left], // NorthWest
-                PathFinder.Instance[node.Coordinates + Vector3Int.back + Vector3Int.right], // southEast
-                PathFinder.Instance[node.Coordinates + Vector3Int.back + Vector3Int.left], // SouthWest
+                PathFinder.Instance[currentCoord + VInt3.ForwardRight], // NorthEast
+                PathFinder.Instance[currentCoord + VInt3.ForwardLeft], // NorthWest
+                PathFinder.Instance[currentCoord + VInt3.BackRight], // southEast
+                PathFinder.Instance[currentCoord + VInt3.BackLeft], // SouthWest
             });
         }
 
@@ -282,8 +313,8 @@ public static class PathFindingManagers
             // up & down
             List<Node> verticalNodes = new List<Node>
             {
-                PathFinder.Instance[node.Coordinates + Vector3Int.up],
-                PathFinder.Instance[node.Coordinates + Vector3Int.down]
+                PathFinder.Instance[currentCoord + VInt3.Up],
+                PathFinder.Instance[currentCoord + VInt3.Down]
             };
 
             if (PathFinder.Instance.canMoveSideways)
@@ -293,8 +324,10 @@ public static class PathFindingManagers
                 {
                     if (n == null) continue;
 
-                    verticalNodes.Add(PathFinder.Instance[n.Coordinates + Vector3Int.up]);
-                    verticalNodes.Add(PathFinder.Instance[n.Coordinates + Vector3Int.down]);
+                    VInt3 cc = new VInt3(n.Coordinates.x, n.Coordinates.y, n.Coordinates.z);
+
+                    verticalNodes.Add(PathFinder.Instance[cc + VInt3.Up]);
+                    verticalNodes.Add(PathFinder.Instance[cc + VInt3.Down]);
                 }
             }
 
@@ -336,20 +369,20 @@ public static class PathFindingManagers
 
     private static float Euclidean(Node start, Node goal)
     {
-        int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
-        int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
-        int dz = Mathf.Abs(start.Coordinates.z - goal.Coordinates.z);
+        int dx = Math.Abs(start.Coordinates.x - goal.Coordinates.x);
+        int dy = Math.Abs(start.Coordinates.y - goal.Coordinates.y);
+        int dz = Math.Abs(start.Coordinates.z - goal.Coordinates.z);
 
         int cardinal = 10;
 
-        return cardinal * Mathf.Sqrt(dx * dx + dy * dy + dz * dz);
+        return (float)(cardinal * Math.Sqrt(dx * dx + dy * dy + dz * dz));
     }
 
     private static float Manhattan(Node start, Node goal)
     {
-        int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
-        int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
-        int dz = Mathf.Abs(start.Coordinates.z - goal.Coordinates.z);
+        int dx = Math.Abs(start.Coordinates.x - goal.Coordinates.x);
+        int dy = Math.Abs(start.Coordinates.y - goal.Coordinates.y);
+        int dz = Math.Abs(start.Coordinates.z - goal.Coordinates.z);
 
         int cardinal = 10;
 
@@ -358,28 +391,28 @@ public static class PathFindingManagers
 
     private static float Chebsyshev(Node start, Node goal)
     {
-        int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
-        int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
-        int dz = Mathf.Abs(start.Coordinates.z - goal.Coordinates.z);
+        int dx = Math.Abs(start.Coordinates.x - goal.Coordinates.x);
+        int dy = Math.Abs(start.Coordinates.y - goal.Coordinates.y);
+        int dz = Math.Abs(start.Coordinates.z - goal.Coordinates.z);
 
         int cardinal = 10;
         int diagonal = 10;
 
-        return cardinal * (dx + dy + dz) + (diagonal - 2 * cardinal) * Mathf.Min(dx, Mathf.Min(dy, dz));
+        return cardinal * (dx + dy + dz) + (diagonal - 2 * cardinal) * Math.Min(dx, Math.Min(dy, dz));
     }
 
     private static float Octile(Node start, Node goal)
     {
-        int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
-        int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
-        int dz = Mathf.Abs(start.Coordinates.z - goal.Coordinates.z);
+        int dx = Math.Abs(start.Coordinates.x - goal.Coordinates.x);
+        int dy = Math.Abs(start.Coordinates.y - goal.Coordinates.y);
+        int dz = Math.Abs(start.Coordinates.z - goal.Coordinates.z);
 
         int cardinal = 10;
         int diagonal = 14;
 
         // In 3D, the Octile equivalent considers the smallest distance as "diagonal", rest as cardinal
-        int min = Mathf.Min(dx, Mathf.Min(dy, dz));
-        int max = Mathf.Max(dx, Mathf.Max(dy, dz));
+        int min = Math.Min(dx, Math.Min(dy, dz));
+        int max = Math.Max(dx, Math.Max(dy, dz));
         int mid = dx + dy + dz - min - max;
 
         return diagonal * min + cardinal * (mid + max - min);
