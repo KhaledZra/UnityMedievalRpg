@@ -48,6 +48,8 @@ public class PathFinder : MonoBehaviour
     public Node[,,] pathNodes;
     private List<GameObject> oldPath = new();
 
+    private float _timer = 0f;
+
 
     public Node this[Vector3Int v] => this[v.x, v.y, v.z];
     public Node this[int x, int y, int z] => WithinBounds(x, y, z) ? pathNodes[x, y, z] : null;
@@ -224,17 +226,11 @@ public class PathFinder : MonoBehaviour
     {
         PreSetupPathFinding();
 
-        // Generate new path
-        HashSet<Node> visited = new HashSet<Node>();
-        List<Node> newPath = PathFindingManagers.AstarPath(
+        StartCoroutine(PathFindingManagers.AstarPath(
             pathNodes[start.x, start.y, start.z],
             pathNodes[target.x, target.y, target.z],
             heuristic,
-            visited);
-
-        if (newPath == null) return;
-
-        StartCoroutine(GeneratePath(newPath, visited));
+            PathCallBack));
     }
 
     [Button]
@@ -242,47 +238,44 @@ public class PathFinder : MonoBehaviour
     {
         PreSetupPathFinding();
 
-        // Generate new path
-        HashSet<Node> visited = new HashSet<Node>();
-
-        List<Node> newPath = PathFindingManagers.DijkstraPath(
+        StartCoroutine(PathFindingManagers.DijkstraPath(
             pathNodes[start.x, start.y, start.z],
             pathNodes[target.x, target.y, target.z],
-            heuristic,
-            visited);
-
-        if (newPath == null) return;
-
-        StartCoroutine(GeneratePath(newPath, visited));
+            heuristic, PathCallBack));
     }
 
     [Button]
-    private void BFS()
+    private void BreadthFirstSearch()
     {
         PreSetupPathFinding();
 
-        HashSet<Node> visited = new HashSet<Node>();
-
-        List<Node> newPath = PathFindingManagers.BreadthFirstSearch(
+        StartCoroutine(PathFindingManagers.BreadthFirstSearch(
             pathNodes[start.x, start.y, start.z],
-            pathNodes[target.x, target.y, target.z], visited);
-
-        if (newPath == null) return;
-
-        StartCoroutine(GeneratePath(newPath, visited));
+            pathNodes[target.x, target.y, target.z],
+            PathCallBack));
     }
 
     [Button]
     private void FloodFill()
     {
         PreSetupPathFinding();
+        
+        StartCoroutine(PathFindingManagers.FloodFillPath(
+            pathNodes[start.x, start.y, start.z], PathCallBack));
+    }
 
-        List<Node> newPath = PathFindingManagers.FloodFillPath(
-            pathNodes[start.x, start.y, start.z]);
+    private void PathCallBack(List<Node> path, HashSet<Node> visited)
+    {
+        if (path == null)
+        {
+            Debug.LogWarning("Path failed");
+            return;
+        }
 
-        if (newPath == null) return;
+        Debug.Log("Time to calculate path: " + (Time.realtimeSinceStartup - _timer).ToString("F3") + " seconds");
+        Debug.Log("Path generated!");
 
-        StartCoroutine(GeneratePath(newPath));
+        StartCoroutine(GeneratePath(path, visited));
     }
 
     private void PreSetupPathFinding()
@@ -301,6 +294,9 @@ public class PathFinder : MonoBehaviour
             Random.Range(0, pathNodes.GetUpperBound(0)),
             Random.Range(0, pathNodes.GetUpperBound(1)),
             Random.Range(0, pathNodes.GetUpperBound(2)));
+        
+        // Reset Timer
+        _timer = Time.realtimeSinceStartup;
     }
 
     IEnumerator GeneratePath(List<Node> path, HashSet<Node> visited = null)
