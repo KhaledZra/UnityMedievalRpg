@@ -58,8 +58,6 @@ public static class PathFindingManagers
         public static readonly VInt3 BackLeft = new(-1, 0, -1);
     }
 
-    private static readonly int _batchWorkCount = 10;
-
     #region PathFindingAlgorithms
 
     public static async Task FloodFillPathAsync(Node start, Action<List<Node>, HashSet<Node>> callback)
@@ -107,6 +105,7 @@ public static class PathFindingManagers
 
         Queue<Node> openNodes = new Queue<Node>(); // the ones we need to check
         HashSet<Node> closedNodes = new HashSet<Node>(); // this one is the ones we have checked
+        List<Node> path = null;
 
         openNodes.Enqueue(start);
 
@@ -114,33 +113,35 @@ public static class PathFindingManagers
         {
             while (openNodes.Count > 0)
             {
-                for (int i = 0; i < _batchWorkCount && openNodes.Count > 0; i++) // Batch work per frame
+                Node currentNode = openNodes.Dequeue();
+                closedNodes.Add(currentNode);
+
+                if (currentNode == goal)
                 {
-                    Node currentNode = openNodes.Dequeue();
-                    closedNodes.Add(currentNode);
+                    path = CreatePath(currentNode, start);
+                    break;
+                }
 
-                    if (currentNode == goal)
-                    {
-                        List<Node> path = CreatePath(currentNode, start);
-                        // Include search area if we want it
-                        callback?.Invoke(path, includeVisited ? closedNodes.Except(path).ToHashSet() : null);
-                        return;
-                    }
+                foreach (Node neighbor in GetNeighbours(currentNode))
+                {
+                    if (neighbor == null) continue; // node can be out of bounds/wall/idk
+                    if (closedNodes.Contains(neighbor)) continue; // it's already been marked
+                    if (openNodes.Contains(neighbor)) continue; // makes sure we are ignoring dupe connections
 
-                    foreach (Node neighbor in GetNeighbours(currentNode))
-                    {
-                        if (neighbor == null) continue; // node can be out of bounds/wall/idk
-                        if (closedNodes.Contains(neighbor)) continue; // it's already been marked
-                        if (openNodes.Contains(neighbor)) continue; // makes sure we are ignoring dupe connections
-
-                        openNodes.Enqueue(neighbor);
-                        neighbor.Parent = currentNode;
-                    }
+                    openNodes.Enqueue(neighbor);
+                    neighbor.Parent = currentNode;
                 }
             }
         });
 
-        callback?.Invoke(null, null);
+        if (path == null)
+        {
+            callback?.Invoke(null, null);
+        }
+        else
+        {
+            callback?.Invoke(path, includeVisited ? closedNodes.Except(path).ToHashSet() : null);
+        }
     }
 
     public static async Task DijkstraPath(Node start, Node goal, Heuristics heuristic,
@@ -155,6 +156,7 @@ public static class PathFindingManagers
         // SortedSet with custom TileComparer. Basically Temu PriorityQueue
         SortedSet<Node> openNodes = new SortedSet<Node>(new TileComparer());
         HashSet<Node> closedNodes = new HashSet<Node>(); // this one is the ones we have checked
+        List<Node> path = null;
 
         await Task.Run(() =>
         {
@@ -179,10 +181,8 @@ public static class PathFindingManagers
 
                 if (currentNode == goal)
                 {
-                    List<Node> path = CreatePath(currentNode, start);
-                    // Include search area if we want it
-                    callback?.Invoke(path, includeVisited ? closedNodes.Except(path).ToHashSet() : null);
-                    return;
+                    path = CreatePath(currentNode, start);
+                    break;
                 }
 
                 foreach (Node neighbor in GetNeighbours(currentNode))
@@ -206,7 +206,15 @@ public static class PathFindingManagers
             }
         });
 
-        callback?.Invoke(null, null);
+
+        if (path == null)
+        {
+            callback?.Invoke(null, null);
+        }
+        else
+        {
+            callback?.Invoke(path, includeVisited ? closedNodes.Except(path).ToHashSet() : null);
+        }
     }
 
     public static async Task AstarPath(Node start, Node goal, Heuristics heuristic,
@@ -221,6 +229,7 @@ public static class PathFindingManagers
         // SortedSet with custom TileComparer. Basically Temu PriorityQueue
         SortedSet<Node> openNodes = new SortedSet<Node>(new TileComparer());
         HashSet<Node> closedNodes = new HashSet<Node>();
+        List<Node> path = null;
 
         await Task.Run(() =>
         {
@@ -240,45 +249,47 @@ public static class PathFindingManagers
         {
             while (openNodes.Count > 0)
             {
-                for (int i = 0; i < _batchWorkCount && openNodes.Count > 0; i++) // Batch work per frame
+                Node currentNode = openNodes.Min;
+                openNodes.Remove(currentNode);
+                closedNodes.Add(currentNode);
+
+                if (currentNode == goal)
                 {
-                    Node currentNode = openNodes.Min;
-                    openNodes.Remove(currentNode);
-                    closedNodes.Add(currentNode);
+                    path = CreatePath(currentNode, start);
+                    return;
+                }
 
-                    if (currentNode == goal)
+                foreach (Node neighbor in GetNeighbours(currentNode))
+                {
+                    if (neighbor == null) continue;
+                    if (closedNodes.Contains(neighbor)) continue;
+
+                    float heldGScore = currentNode.gScore + CalculateHeuristic(currentNode, neighbor, heuristic);
+
+                    if (heldGScore < neighbor.gScore)
                     {
-                        List<Node> path = CreatePath(currentNode, start);
-                        // Include search area if we want it
-                        callback?.Invoke(path, includeVisited ? closedNodes.Except(path).ToHashSet() : null);
-                        return;
-                    }
+                        // Remove since we are changing values
+                        if (openNodes.Contains(neighbor)) openNodes.Remove(neighbor);
 
-                    foreach (Node neighbor in GetNeighbours(currentNode))
-                    {
-                        if (neighbor == null) continue;
-                        if (closedNodes.Contains(neighbor)) continue;
+                        neighbor.Parent = currentNode;
+                        neighbor.gScore = heldGScore;
+                        neighbor.hScore = CalculateHeuristic(neighbor, goal, heuristic);
 
-                        float heldGScore = currentNode.gScore + CalculateHeuristic(currentNode, neighbor, heuristic);
-
-                        if (heldGScore < neighbor.gScore)
-                        {
-                            // Remove since we are changing values
-                            if (openNodes.Contains(neighbor)) openNodes.Remove(neighbor);
-
-                            neighbor.Parent = currentNode;
-                            neighbor.gScore = heldGScore;
-                            neighbor.hScore = CalculateHeuristic(neighbor, goal, heuristic);
-
-                            // Add back so it's sorted
-                            openNodes.Add(neighbor);
-                        }
+                        // Add back so it's sorted
+                        openNodes.Add(neighbor);
                     }
                 }
             }
         });
 
-        callback?.Invoke(null, null);
+        if (path == null)
+        {
+            callback?.Invoke(null, null);
+        }
+        else
+        {
+            callback?.Invoke(path, includeVisited ? closedNodes.Except(path).ToHashSet() : null);
+        }
     }
 
     #endregion

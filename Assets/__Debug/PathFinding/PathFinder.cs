@@ -316,7 +316,7 @@ public class PathFinder : MonoBehaviour
             oldPath.Add(Instantiate(pathPrefab, p.transform.position, Quaternion.identity));
             oldPath.Last().GetComponent<Renderer>().material.color = pathColor;
 
-            yield return new WaitForSeconds(0.01f);
+            // yield return new WaitForSeconds(0.01f);
         }
 
         if (visited == null) yield break;
@@ -326,7 +326,7 @@ public class PathFinder : MonoBehaviour
             oldPath.Add(Instantiate(pathPrefab, p.transform.position, Quaternion.identity));
             oldPath.Last().GetComponent<Renderer>().material.color = visitedColor;
 
-            yield return new WaitForSeconds(0.01f);
+            // yield return new WaitForSeconds(0.01f);
         }
     }
 }
