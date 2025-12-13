@@ -677,10 +677,14 @@ MonoBehaviour:
   targetColor: {r: 0, g: 0.09131837, b: 1, a: 1}
   pathColor: {r: 0.8937168, g: 0, b: 1, a: 0}
   visitedColor: {r: 1, g: 0.8235295, b: 0, a: 0}
+  start: {x: 0, y: 0, z: 0}
+  target: {x: 5, y: 8, z: 0}
+  NavMeshSize: {x: 40, y: 5, z: 40}
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 2048
   canMoveSideways: 1
-  start: {x: 0, y: 0}
-  target: {x: 5, y: 8}
-  heuristic: 3
+  canMoveVertical: 1
 --- !u!1 &1560116174
 GameObject:
   m_ObjectHideFlags: 0

@@ -51,7 +51,7 @@ public static class PathFindingManagers
         while (openNodes.Count > 0)
         {
             iteration++;
-            if (iteration > 1000) break; // limit so i don't crash unity
+            if (iteration > 10000) break; // limit so i don't crash unity
             Debug.Log("Iteration: " + openNodes.Count);
 
             Node currentNode = openNodes.Min;
@@ -228,28 +228,53 @@ public static class PathFindingManagers
 
     private static List<Node> GetNeighbours(Node node)
     {
-        List<Node> directions = new List<Node>
+        HashSet<Node> directions = new()
         {
             // Cardinal Direction
-            PathFinder.Instance[node.Coordinates + Vector2Int.up], // North
-            PathFinder.Instance[node.Coordinates + Vector2Int.right], // east
-            PathFinder.Instance[node.Coordinates + Vector2Int.down], // south
-            PathFinder.Instance[node.Coordinates + Vector2Int.left], // west
+            PathFinder.Instance[node.Coordinates + Vector3Int.forward], // North
+            PathFinder.Instance[node.Coordinates + Vector3Int.right], // east
+            PathFinder.Instance[node.Coordinates + Vector3Int.back], // south
+            PathFinder.Instance[node.Coordinates + Vector3Int.left], // west
         };
 
         if (PathFinder.Instance.canMoveSideways)
         {
-            directions.AddRange(new[]
+            directions.UnionWith(new[]
             {
                 // Diagonal
-                PathFinder.Instance[node.Coordinates + Vector2Int.up + Vector2Int.right], // NorthEast
-                PathFinder.Instance[node.Coordinates + Vector2Int.up + Vector2Int.left], // NorthWest
-                PathFinder.Instance[node.Coordinates + Vector2Int.down + Vector2Int.right], // southEast
-                PathFinder.Instance[node.Coordinates + Vector2Int.down + Vector2Int.left], // SouthWest
+                PathFinder.Instance[node.Coordinates + Vector3Int.forward + Vector3Int.right], // NorthEast
+                PathFinder.Instance[node.Coordinates + Vector3Int.forward + Vector3Int.left], // NorthWest
+                PathFinder.Instance[node.Coordinates + Vector3Int.back + Vector3Int.right], // southEast
+                PathFinder.Instance[node.Coordinates + Vector3Int.back + Vector3Int.left], // SouthWest
             });
         }
+        
+        // Vertical neighbors
+        if (PathFinder.Instance.canMoveVertical)
+        {
+            // up & down
+            List<Node> verticalNodes = new List<Node>
+            {
+                PathFinder.Instance[node.Coordinates + Vector3Int.up],
+                PathFinder.Instance[node.Coordinates + Vector3Int.down]
+            };
+        
+            if (PathFinder.Instance.canMoveSideways)
+            {
+                // Sideways stuff
+                foreach (Node n in directions)
+                {
+                    if (n == null) continue;
+        
+                    verticalNodes.Add(PathFinder.Instance[n.Coordinates + Vector3Int.up]);
+                    verticalNodes.Add(PathFinder.Instance[n.Coordinates + Vector3Int.down]);
+                }
+            }
+        
+            directions.UnionWith(verticalNodes);
+        }
 
-        return directions;
+        return directions.ToList();
     }
 
     private static List<Node> CreatePath(Node start, Node goal)
@@ -285,42 +310,51 @@ public static class PathFindingManagers
     {
         int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
         int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
+        int dz = Mathf.Abs(start.Coordinates.z - goal.Coordinates.z);
 
         int cardinal = 10;
 
-        return cardinal * Mathf.Sqrt(dx * dx + dy * dy);
+        return cardinal * Mathf.Sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     private static float Manhattan(Node start, Node goal)
     {
         int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
         int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
+        int dz = Mathf.Abs(start.Coordinates.z - goal.Coordinates.z);
 
         int cardinal = 10;
 
-        return cardinal * (dx + dy);
+        return cardinal * (dx + dy + dz);
     }
 
     private static float Chebsyshev(Node start, Node goal)
     {
         int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
         int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
+        int dz = Mathf.Abs(start.Coordinates.z - goal.Coordinates.z);
 
         int cardinal = 10;
         int diagonal = 10;
 
-        return cardinal * (dx + dy) + (diagonal - 2 * cardinal) * Mathf.Min(dx, dy);
+        return cardinal * (dx + dy + dz) + (diagonal - 2 * cardinal) * Mathf.Min(dx, Mathf.Min(dy, dz));
     }
 
     private static float Octile(Node start, Node goal)
     {
         int dx = Mathf.Abs(start.Coordinates.x - goal.Coordinates.x);
         int dy = Mathf.Abs(start.Coordinates.y - goal.Coordinates.y);
+        int dz = Mathf.Abs(start.Coordinates.z - goal.Coordinates.z);
 
         int cardinal = 10;
         int diagonal = 14;
 
-        return diagonal * Mathf.Min(dx, dy) + cardinal * (Mathf.Max(dx, dy) - Mathf.Min(dx, dy));
+        // In 3D, the Octile equivalent considers the smallest distance as "diagonal", rest as cardinal
+        int min = Mathf.Min(dx, Mathf.Min(dy, dz));
+        int max = Mathf.Max(dx, Mathf.Max(dy, dz));
+        int mid = dx + dy + dz - min - max;
+
+        return diagonal * min + cardinal * (mid + max - min);
     }
 
     #endregion

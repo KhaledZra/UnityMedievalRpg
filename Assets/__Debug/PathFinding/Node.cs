@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Node : MonoBehaviour
 {
-    public Vector2Int Coordinates;
+    public Vector3Int Coordinates;
     public Node Parent = null;
     public List<Node> Neihbours = new();
 

@@ -8,55 +8,67 @@ using Vector3 = UnityEngine.Vector3;
 
 public class PathFinder : MonoBehaviour
 {
-    [SerializeField] private Node nodePrefab;
-    [SerializeField] private GameObject pathPrefab;
-
-    // [SerializeField] private Vector2Int start;
-    // [SerializeField] private Vector2Int target;
-    [SerializeField] private Color startColor;
-    [SerializeField] private Color targetColor;
-    [SerializeField] private Color pathColor;
-    [SerializeField] private Color visitedColor;
-    [SerializeField] public bool canMoveSideways = true;
+    #region Singleton
 
     public static PathFinder Instance { get; private set; }
-
-    public Node[,] pathNodes;
-
-    private GameObject[,] tiles;
-    private List<GameObject> oldPath = new();
-
-    [SerializeField, ReadOnly] private Vector2Int start = new(0, 0);
-    [SerializeField, ReadOnly] private Vector2Int target = new(0, 0);
-
-    [Space, SerializeField] private PathFindingManagers.Heuristics heuristic;
-
-
-    public Node this[Vector2Int v] => this[v.x, v.y];
-    public Node this[int x, int y] => WithinBounds(x, y) ? pathNodes[x, y] : null;
-
-    public bool WithinBounds(Vector2Int v)
-    {
-        return WithinBounds(v.x, v.y);
-    }
-
-    public bool WithinBounds(int x, int y)
-    {
-        return x >= 0 &&
-               y >= 0 &&
-               x < tiles.GetUpperBound(0) + 1 &&
-               y < tiles.GetUpperBound(1) + 1;
-    }
 
     private void Awake()
     {
         Instance = this;
     }
 
+    #endregion
+
+    [Header("Prefabs")] [SerializeField] private Node nodePrefab;
+    [SerializeField] private GameObject pathPrefab;
+
+    // [SerializeField] private Vector2Int start;
+    // [SerializeField] private Vector2Int target;
+    [Space, Header("Colors")] [SerializeField]
+    private Color startColor;
+
+    [SerializeField] private Color targetColor;
+    [SerializeField] private Color pathColor;
+    [SerializeField] private Color visitedColor;
+
+    [Space, Header("Values"), SerializeField, ReadOnly]
+    private Vector3Int start = new(0, 0, 0);
+
+    [SerializeField, ReadOnly] private Vector3Int target = new(0, 0, 0);
+
+    [Space, Header("Settings")] [SerializeField]
+    private Vector3Int NavMeshSize;
+
+    [SerializeField] private LayerMask obstacleMask;
+
+    [SerializeField] public bool canMoveSideways = true;
+    [SerializeField] public bool canMoveVertical = true;
+    [Space, SerializeField] private PathFindingManagers.Heuristics heuristic;
+
+    public Node[,,] pathNodes;
+    private List<GameObject> oldPath = new();
+
+
+    public Node this[Vector3Int v] => this[v.x, v.y, v.z];
+    public Node this[int x, int y, int z] => WithinBounds(x, y, z) ? pathNodes[x, y, z] : null;
+
+    public bool WithinBounds(Vector3Int v)
+    {
+        return WithinBounds(v.x, v.y, v.z);
+    }
+
+    public bool WithinBounds(int x, int y, int z)
+    {
+        return x >= 0 &&
+               y >= 0 &&
+               z >= 0 &&
+               x < pathNodes.GetUpperBound(0) + 1 &&
+               y < pathNodes.GetUpperBound(1) + 1 &&
+               z < pathNodes.GetUpperBound(2) + 1;
+    }
+
     private void Start()
     {
-        tiles = GridGenerator.Instance.tiles;
-
         // StartCoroutine(UpdateNavMesh());
 
         if (pathNodes != null)
@@ -76,28 +88,29 @@ public class PathFinder : MonoBehaviour
 
     private void CreatePathNodes()
     {
-        pathNodes = new Node[tiles.GetUpperBound(0) + 1, tiles.GetUpperBound(1) + 1];
+        pathNodes = new Node[NavMeshSize.x, NavMeshSize.y, NavMeshSize.z];
 
-        for (int i = 0; i <= tiles.GetUpperBound(0); i++)
+        for (int x = 0; x <= pathNodes.GetUpperBound(0); x++)
         {
-            for (int j = 0; j <= tiles.GetUpperBound(1); j++)
+            for (int y = 0; y <= pathNodes.GetUpperBound(1); y++)
             {
-                // Incase it's missing or null
-                if (tiles[i, j] == null) continue;
-
-                // Check if we are hitting a blockedPath
-                Collider[] cols = Physics.OverlapBox(tiles[i, j].transform.position, Vector3.one,
-                    Quaternion.identity, 1 << 11);
-
-                if (cols.Length == 0)
+                for (int z = 0; z <= pathNodes.GetUpperBound(2); z++)
                 {
-                    pathNodes[i, j] =
-                        Instantiate(nodePrefab,
-                            GridGenerator.Instance.tiles[i, j].transform.position,
-                            Quaternion.identity,
-                            transform);
+                    Vector3Int currentLocation = new Vector3Int(x, y, z);
+                    // Check if we are hitting a blockedPath
+                    Collider[] cols = Physics.OverlapBox(currentLocation, Vector3.one,
+                        Quaternion.identity, obstacleMask);
 
-                    pathNodes[i, j].Coordinates = new Vector2Int(i, j);
+                    if (cols.Length == 0)
+                    {
+                        pathNodes[x, y, z] =
+                            Instantiate(nodePrefab,
+                                currentLocation,
+                                Quaternion.identity,
+                                transform);
+
+                        pathNodes[x, y, z].Coordinates = currentLocation;
+                    }
                 }
             }
         }
@@ -105,34 +118,63 @@ public class PathFinder : MonoBehaviour
 
     private void UpdatePathNeighbors()
     {
-        for (int i = 0; i <= tiles.GetUpperBound(0); i++)
+        for (int x = 0; x <= pathNodes.GetUpperBound(0); x++)
         {
-            for (int j = 0; j <= tiles.GetUpperBound(1); j++)
+            for (int y = 0; y <= pathNodes.GetUpperBound(1); y++)
             {
-                if (tiles[i, j] == null) continue;
-                if (this[i, j] == null) continue;
-
-                List<Node> potentialConnections = new List<Node>
+                for (int z = 0; z < pathNodes.GetUpperBound(2); z++)
                 {
-                    this[i, j + 1], // North
-                    this[i, j - 1], // South
-                    this[i + 1, j], // East
-                    this[i - 1, j], // West
-                };
+                    if (this[x, y, z] == null) continue;
 
-                // Diagonal neighbors (corners)
-                if (canMoveSideways)
-                {
-                    potentialConnections.AddRange(new[]
+                    Vector3Int currentLocation = new Vector3Int(x, y, z);
+
+                    HashSet<Node> potentialConnections = new HashSet<Node>
                     {
-                        this[i + 1, j + 1], // NorthEast
-                        this[i - 1, j + 1], // NorthWest
-                        this[i + 1, j - 1], // SouthEast
-                        this[i - 1, j - 1], // SouthWest
-                    });
-                }
+                        this[currentLocation + Vector3Int.forward], // North
+                        this[currentLocation + Vector3Int.right], // East
+                        this[currentLocation + Vector3Int.back], // South
+                        this[currentLocation + Vector3Int.left], // West
+                    };
 
-                pathNodes[i, j].Neihbours = potentialConnections.Where(node => node != null).ToList();
+                    // Diagonal neighbors (corners)
+                    if (canMoveSideways)
+                    {
+                        potentialConnections.UnionWith(new[]
+                        {
+                            this[currentLocation + Vector3Int.forward + Vector3Int.right], // North East
+                            this[currentLocation + Vector3Int.forward + Vector3Int.left], // North West
+                            this[currentLocation + Vector3Int.back + Vector3Int.right], // South East
+                            this[currentLocation + Vector3Int.back + Vector3Int.left], // South West
+                        });
+                    }
+
+                    // Vertical neighbors
+                    if (canMoveVertical)
+                    {
+                        // up & down
+                        List<Node> verticalNodes = new List<Node>
+                        {
+                            this[currentLocation + Vector3Int.up],
+                            this[currentLocation + Vector3Int.down]
+                        };
+
+                        if (canMoveSideways)
+                        {
+                            // Sideways stuff
+                            foreach (Node node in potentialConnections)
+                            {
+                                if (node == null) continue;
+
+                                verticalNodes.Add(this[node.Coordinates + Vector3Int.up]);
+                                verticalNodes.Add(this[node.Coordinates + Vector3Int.down]);
+                            }
+                        }
+
+                        potentialConnections.UnionWith(verticalNodes);
+                    }
+
+                    pathNodes[x, y, z].Neihbours = potentialConnections.Where(node => node != null).ToList();
+                }
             }
         }
     }
@@ -180,25 +222,13 @@ public class PathFinder : MonoBehaviour
     [Button]
     private void Astar()
     {
-        // Clean up if any old path
-        oldPath.ForEach(Destroy);
-        oldPath.Clear();
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = Color.grey;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = Color.grey;
-
-        // Get new random targets
-        start = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
-            Random.Range(0, tiles.GetUpperBound(1)));
-        target = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
-            Random.Range(0, tiles.GetUpperBound(1)));
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
+        PreSetupPathFinding();
 
         // Generate new path
         HashSet<Node> visited = new HashSet<Node>();
         List<Node> newPath = PathFindingManagers.AstarPath(
-            pathNodes[start.x, start.y],
-            pathNodes[target.x, target.y],
+            pathNodes[start.x, start.y, start.z],
+            pathNodes[target.x, target.y, target.z],
             heuristic,
             visited);
 
@@ -210,26 +240,14 @@ public class PathFinder : MonoBehaviour
     [Button]
     private void Dijkstra()
     {
-        // Clean up if any old path
-        oldPath.ForEach(Destroy);
-        oldPath.Clear();
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = Color.grey;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = Color.grey;
-
-        // Get new random targets
-        start = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
-            Random.Range(0, tiles.GetUpperBound(1)));
-        target = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
-            Random.Range(0, tiles.GetUpperBound(1)));
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
+        PreSetupPathFinding();
 
         // Generate new path
         HashSet<Node> visited = new HashSet<Node>();
 
         List<Node> newPath = PathFindingManagers.DijkstraPath(
-            pathNodes[start.x, start.y],
-            pathNodes[target.x, target.y],
+            pathNodes[start.x, start.y, start.z],
+            pathNodes[target.x, target.y, target.z],
             heuristic,
             visited);
 
@@ -241,25 +259,13 @@ public class PathFinder : MonoBehaviour
     [Button]
     private void BFS()
     {
-        // Clean up if any old path
-        oldPath.ForEach(Destroy);
-        oldPath.Clear();
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = Color.grey;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = Color.grey;
-
-        // Get new random targets
-        start = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
-            Random.Range(0, tiles.GetUpperBound(1)));
-        target = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
-            Random.Range(0, tiles.GetUpperBound(1)));
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
+        PreSetupPathFinding();
 
         HashSet<Node> visited = new HashSet<Node>();
 
         List<Node> newPath = PathFindingManagers.BreadthFirstSearch(
-            pathNodes[start.x, start.y],
-            pathNodes[target.x, target.y], visited);
+            pathNodes[start.x, start.y, start.z],
+            pathNodes[target.x, target.y, target.z], visited);
 
         if (newPath == null) return;
 
@@ -269,26 +275,32 @@ public class PathFinder : MonoBehaviour
     [Button]
     private void FloodFill()
     {
-        // Clean up if any old path
-        oldPath.ForEach(Destroy);
-        oldPath.Clear();
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = Color.grey;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = Color.grey;
-
-        // Get new random targets
-        start = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
-            Random.Range(0, tiles.GetUpperBound(1)));
-        target = new Vector2Int(Random.Range(0, tiles.GetUpperBound(0)),
-            Random.Range(0, tiles.GetUpperBound(1)));
-        tiles[start.x, start.y].GetComponent<Renderer>().material.color = startColor;
-        tiles[target.x, target.y].GetComponent<Renderer>().material.color = targetColor;
+        PreSetupPathFinding();
 
         List<Node> newPath = PathFindingManagers.FloodFillPath(
-            pathNodes[start.x, start.y]);
+            pathNodes[start.x, start.y, start.z]);
 
         if (newPath == null) return;
 
         StartCoroutine(GeneratePath(newPath));
+    }
+
+    private void PreSetupPathFinding()
+    {
+        // Clean up if any old path
+        oldPath.ForEach(Destroy);
+        oldPath.Clear();
+
+        // Get new random targets
+        start = new Vector3Int(
+            Random.Range(0, pathNodes.GetUpperBound(0)),
+            Random.Range(0, pathNodes.GetUpperBound(1)),
+            Random.Range(0, pathNodes.GetUpperBound(2)));
+
+        target = new Vector3Int(
+            Random.Range(0, pathNodes.GetUpperBound(0)),
+            Random.Range(0, pathNodes.GetUpperBound(1)),
+            Random.Range(0, pathNodes.GetUpperBound(2)));
     }
 
     IEnumerator GeneratePath(List<Node> path, HashSet<Node> visited = null)
