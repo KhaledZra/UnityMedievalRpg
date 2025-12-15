@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PathFinding.Nodes;
 
 public static class PathFindingManagers
 {
@@ -14,9 +15,9 @@ public static class PathFindingManagers
     }
 
     // Custom comparer for SortedSet
-    private class TileComparer : IComparer<Node>
+    private class TileComparer : IComparer<PathNodeData>
     {
-        public int Compare(Node a, Node b)
+        public int Compare(PathNodeData a, PathNodeData b)
         {
             float f = a.FScore() - b.FScore();
             if (f < 0) return -1;
@@ -27,40 +28,10 @@ public static class PathFindingManagers
         }
     }
 
-    // Custom VInt3 struct
-    public struct VInt3
-    {
-        public readonly int x;
-        public readonly int y;
-        public readonly int z;
-
-        public VInt3(int x, int y, int z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public static VInt3 operator +(VInt3 a, VInt3 b) => new(a.x + b.x, a.y + b.y, a.z + b.z);
-        public static VInt3 operator -(VInt3 a, VInt3 b) => new(a.x - b.x, a.y - b.y, a.z - b.z);
-
-        public static readonly VInt3 Forward = new(0, 0, 1);
-        public static readonly VInt3 Back = new(0, 0, -1);
-        public static readonly VInt3 Right = new(1, 0, 0);
-        public static readonly VInt3 Left = new(-1, 0, 0);
-        public static readonly VInt3 Up = new(0, 1, 0);
-        public static readonly VInt3 Down = new(0, -1, 0);
-
-        // Diagonals
-        public static readonly VInt3 ForwardRight = new(1, 0, 1);
-        public static readonly VInt3 ForwardLeft = new(-1, 0, 1);
-        public static readonly VInt3 BackRight = new(1, 0, -1);
-        public static readonly VInt3 BackLeft = new(-1, 0, -1);
-    }
-
     #region PathFindingAlgorithms
 
-    public static async Task FloodFillPathAsync(Node start, Action<List<Node>, HashSet<Node>> callback)
+    public static async Task FloodFillPathAsync(BasePathNode start,
+        Action<List<BasePathNode>, HashSet<BasePathNode>> callback)
     {
         if (start == null)
         {
@@ -68,8 +39,8 @@ public static class PathFindingManagers
             return;
         }
 
-        Queue<Node> openNodes = new Queue<Node>(); // the ones we need to check
-        HashSet<Node> closedNodes = new HashSet<Node>(); // this one is the ones we have checked
+        Queue<BasePathNode> openNodes = new(); // the ones we need to check
+        HashSet<BasePathNode> closedNodes = new(); // this one is the ones we have checked
 
         openNodes.Enqueue(start);
 
@@ -77,10 +48,10 @@ public static class PathFindingManagers
         {
             while (openNodes.Count > 0)
             {
-                Node currentNode = openNodes.Dequeue();
-                closedNodes.Add(currentNode);
+                BasePathNode currentBasePathNode = openNodes.Dequeue();
+                closedNodes.Add(currentBasePathNode);
 
-                foreach (Node neighbor in GetNeighbours(currentNode))
+                foreach (BasePathNode neighbor in currentBasePathNode.Neighbors)
                 {
                     if (neighbor == null) continue; // node can be out of bounds/wall/idk
                     if (closedNodes.Contains(neighbor)) continue; // it's already been marked
@@ -94,8 +65,8 @@ public static class PathFindingManagers
         callback?.Invoke(closedNodes.ToList(), null);
     }
 
-    public static async Task BreadthFirstSearch(Node start, Node goal,
-        Action<List<Node>, HashSet<Node>> callback, bool includeVisited = true)
+    public static async Task BreadthFirstSearch(BasePathNode start, BasePathNode goal,
+        Action<List<BasePathNode>, HashSet<BasePathNode>> callback, bool includeVisited = true)
     {
         if (start == null || goal == null)
         {
@@ -103,9 +74,9 @@ public static class PathFindingManagers
             return;
         }
 
-        Queue<Node> openNodes = new Queue<Node>(); // the ones we need to check
-        HashSet<Node> closedNodes = new HashSet<Node>(); // this one is the ones we have checked
-        List<Node> path = null;
+        Queue<BasePathNode> openNodes = new(); // the ones we need to check
+        HashSet<BasePathNode> closedNodes = new(); // this one is the ones we have checked
+        List<BasePathNode> path = null;
 
         openNodes.Enqueue(start);
 
@@ -113,23 +84,23 @@ public static class PathFindingManagers
         {
             while (openNodes.Count > 0)
             {
-                Node currentNode = openNodes.Dequeue();
-                closedNodes.Add(currentNode);
+                BasePathNode currentBasePathNode = openNodes.Dequeue();
+                closedNodes.Add(currentBasePathNode);
 
-                if (currentNode == goal)
+                if (currentBasePathNode == goal)
                 {
-                    path = CreatePath(currentNode, start);
+                    path = CreatePath(currentBasePathNode, start);
                     break;
                 }
 
-                foreach (Node neighbor in GetNeighbours(currentNode))
+                foreach (BasePathNode neighbor in currentBasePathNode.Neighbors)
                 {
                     if (neighbor == null) continue; // node can be out of bounds/wall/idk
                     if (closedNodes.Contains(neighbor)) continue; // it's already been marked
                     if (openNodes.Contains(neighbor)) continue; // makes sure we are ignoring dupe connections
 
                     openNodes.Enqueue(neighbor);
-                    neighbor.Parent = currentNode;
+                    neighbor.Parent = currentBasePathNode;
                 }
             }
         });
@@ -144,8 +115,8 @@ public static class PathFindingManagers
         }
     }
 
-    public static async Task DijkstraPath(Node start, Node goal, Heuristics heuristic,
-        Action<List<Node>, HashSet<Node>> callback, bool includeVisited = true)
+    public static async Task DijkstraPath(BasePathNode start, BasePathNode goal, Heuristics heuristic,
+        Action<List<BasePathNode>, HashSet<BasePathNode>> callback, bool includeVisited = true)
     {
         if (start == null || goal == null)
         {
@@ -154,53 +125,51 @@ public static class PathFindingManagers
         }
 
         // SortedSet with custom TileComparer. Basically Temu PriorityQueue
-        SortedSet<Node> openNodes = new SortedSet<Node>(new TileComparer());
-        HashSet<Node> closedNodes = new HashSet<Node>(); // this one is the ones we have checked
-        List<Node> path = null;
+        SortedSet<PathNodeData> openNodes = new(new TileComparer());
+        HashSet<BasePathNode> closedNodes = new(); // this one is the ones we have checked
+        Dictionary<BasePathNode, PathNodeData> dataDict = new();
+        List<BasePathNode> path = null;
 
-        await Task.Run(() =>
-        {
-            foreach (Node node in PathFinder.Instance.pathNodes)
-            {
-                if (node == null) continue;
-                node.gScore = float.MaxValue;
-                node.hScore = 0;
-            }
-        });
-
-        start.gScore = 0;
-        openNodes.Add(start);
+        PathNodeData currentData = GetData(start, dataDict);
+        currentData.GScore = 0;
+        currentData.HScore = CalculateHeuristic(start, goal, heuristic);
+        
+        openNodes.Add(currentData);
 
         await Task.Run(() =>
         {
             while (openNodes.Count > 0)
             {
-                Node currentNode = openNodes.Min;
-                openNodes.Remove(currentNode);
-                closedNodes.Add(currentNode);
+                currentData = openNodes.Min;
+                openNodes.Remove(currentData);
+                closedNodes.Add(currentData.Node);
 
-                if (currentNode == goal)
+                if (currentData.Node == goal)
                 {
-                    path = CreatePath(currentNode, start);
-                    break;
+                    path = CreatePath(currentData.Node, start);
+                    return;
                 }
 
-                foreach (Node neighbor in GetNeighbours(currentNode))
+                foreach (BasePathNode neighbor in currentData.Node.Neighbors)
                 {
-                    if (neighbor == null) continue; // node can be out of bounds/wall/idk
-                    if (closedNodes.Contains(neighbor)) continue; // it's already been marked
+                    if (neighbor == null) continue;
+                    if (closedNodes.Contains(neighbor)) continue;
+                    
+                    PathNodeData newData = GetData(neighbor, dataDict);
 
-                    float heldGScore =
-                        currentNode.gScore + CalculateHeuristic(currentNode, neighbor, heuristic);
-
-                    if (heldGScore < neighbor.gScore)
+                    float heldGScore = currentData.GScore +
+                                       CalculateHeuristic(currentData.Node, neighbor, heuristic);
+                    
+                    if (heldGScore < newData.GScore)
                     {
-                        if (openNodes.Contains(neighbor)) openNodes.Remove(neighbor);
+                        // Remove since we are changing values
+                        if (openNodes.Contains(newData)) openNodes.Remove(newData);
 
-                        neighbor.Parent = currentNode;
-                        neighbor.gScore = heldGScore;
+                        newData.Node.Parent = currentData.Node;
+                        newData.GScore = heldGScore;
 
-                        openNodes.Add(neighbor);
+                        // Add back so it's sorted
+                        openNodes.Add(newData);
                     }
                 }
             }
@@ -217,8 +186,8 @@ public static class PathFindingManagers
         }
     }
 
-    public static async Task AstarPath(Node start, Node goal, Heuristics heuristic,
-        Action<List<Node>, HashSet<Node>> callback, bool includeVisited = true)
+    public static async Task AstarPath(BasePathNode start, BasePathNode goal, Heuristics heuristic,
+        Action<List<BasePathNode>, HashSet<BasePathNode>> callback, bool includeVisited = true)
     {
         if (start == null || goal == null)
         {
@@ -227,56 +196,52 @@ public static class PathFindingManagers
         }
 
         // SortedSet with custom TileComparer. Basically Temu PriorityQueue
-        SortedSet<Node> openNodes = new SortedSet<Node>(new TileComparer());
-        HashSet<Node> closedNodes = new HashSet<Node>();
-        List<Node> path = null;
+        SortedSet<PathNodeData> openNodes = new(new TileComparer());
+        HashSet<BasePathNode> closedNodes = new();
+        Dictionary<BasePathNode, PathNodeData> dataDict = new();
+        List<BasePathNode> path = null;
 
-        await Task.Run(() =>
-        {
-            foreach (Node pathNode in PathFinder.Instance.pathNodes)
-            {
-                if (pathNode == null) continue;
-                pathNode.gScore = float.MaxValue;
-            }
-        });
+        PathNodeData currentData = GetData(start, dataDict);
+        currentData.GScore = 0;
+        currentData.HScore = CalculateHeuristic(start, goal, heuristic);
 
-        start.gScore = 0;
-        start.hScore = CalculateHeuristic(start, goal, heuristic);
-
-        openNodes.Add(start);
+        openNodes.Add(currentData);
 
         await Task.Run(() =>
         {
             while (openNodes.Count > 0)
             {
-                Node currentNode = openNodes.Min;
-                openNodes.Remove(currentNode);
-                closedNodes.Add(currentNode);
+                currentData = openNodes.Min;
+                openNodes.Remove(currentData);
+                closedNodes.Add(currentData.Node);
 
-                if (currentNode == goal)
+                if (currentData.Node == goal)
                 {
-                    path = CreatePath(currentNode, start);
+                    path = CreatePath(currentData.Node, start);
                     return;
                 }
 
-                foreach (Node neighbor in GetNeighbours(currentNode))
+                foreach (BasePathNode neighbor in currentData.Node.Neighbors)
                 {
                     if (neighbor == null) continue;
                     if (closedNodes.Contains(neighbor)) continue;
+                    
+                    PathNodeData newData = GetData(neighbor, dataDict);
 
-                    float heldGScore = currentNode.gScore + CalculateHeuristic(currentNode, neighbor, heuristic);
+                    float heldGScore = currentData.GScore +
+                                       CalculateHeuristic(currentData.Node, neighbor, heuristic);
 
-                    if (heldGScore < neighbor.gScore)
+                    if (heldGScore < newData.GScore)
                     {
                         // Remove since we are changing values
-                        if (openNodes.Contains(neighbor)) openNodes.Remove(neighbor);
+                        if (openNodes.Contains(newData)) openNodes.Remove(newData);
 
-                        neighbor.Parent = currentNode;
-                        neighbor.gScore = heldGScore;
-                        neighbor.hScore = CalculateHeuristic(neighbor, goal, heuristic);
+                        newData.Node.Parent = currentData.Node;
+                        newData.GScore = heldGScore;
+                        newData.HScore = CalculateHeuristic(neighbor, goal, heuristic);
 
                         // Add back so it's sorted
-                        openNodes.Add(neighbor);
+                        openNodes.Add(newData);
                     }
                 }
             }
@@ -296,63 +261,72 @@ public static class PathFindingManagers
 
     #region Utility
 
-    private static List<Node> GetNeighbours(Node node)
+    // Get data if it does not exist create and return that
+    private static PathNodeData GetData(BasePathNode node, Dictionary<BasePathNode, PathNodeData> dataDict)
     {
-        VInt3 currentCoord = new VInt3(node.Coordinates.x, node.Coordinates.y, node.Coordinates.z);
-        HashSet<Node> directions = new()
-        {
-            // Cardinal Direction
-            PathFinder.Instance[currentCoord + VInt3.Forward], // North
-            PathFinder.Instance[currentCoord + VInt3.Right], // east
-            PathFinder.Instance[currentCoord + VInt3.Back], // south
-            PathFinder.Instance[currentCoord + VInt3.Left], // west
-        };
-
-        if (PathFinder.Instance.canMoveSideways)
-        {
-            directions.UnionWith(new[]
-            {
-                // Diagonal
-                PathFinder.Instance[currentCoord + VInt3.ForwardRight], // NorthEast
-                PathFinder.Instance[currentCoord + VInt3.ForwardLeft], // NorthWest
-                PathFinder.Instance[currentCoord + VInt3.BackRight], // southEast
-                PathFinder.Instance[currentCoord + VInt3.BackLeft], // SouthWest
-            });
-        }
-
-        // Vertical neighbors
-        if (PathFinder.Instance.canMoveVertical)
-        {
-            // up & down
-            List<Node> verticalNodes = new List<Node>
-            {
-                PathFinder.Instance[currentCoord + VInt3.Up],
-                PathFinder.Instance[currentCoord + VInt3.Down]
-            };
-
-            if (PathFinder.Instance.canMoveSideways)
-            {
-                // Sideways stuff
-                foreach (Node n in directions)
-                {
-                    if (n == null) continue;
-
-                    VInt3 cc = new VInt3(n.Coordinates.x, n.Coordinates.y, n.Coordinates.z);
-
-                    verticalNodes.Add(PathFinder.Instance[cc + VInt3.Up]);
-                    verticalNodes.Add(PathFinder.Instance[cc + VInt3.Down]);
-                }
-            }
-
-            directions.UnionWith(verticalNodes);
-        }
-
-        return directions.ToList();
+        if (!dataDict.TryGetValue(node, out var data))
+            dataDict[node] = data = new PathNodeData(node);
+        return data;
     }
 
-    private static List<Node> CreatePath(Node start, Node goal)
+    // todo: might have to delete : - [
+    // private static List<BasePathNode> GetNeighbours<BasePathNode>(BasePathNode node)
+    // {
+    //     VInt3 currentCoord = new VInt3(node.Coordinates.x, node.Coordinates.y, node.Coordinates.z);
+    //     HashSet<BasePathNode> directions = new()
+    //     {
+    //         // Cardinal Direction
+    //         PathFinder.Instance[currentCoord + VInt3.Forward], // North
+    //         PathFinder.Instance[currentCoord + VInt3.Right], // east
+    //         PathFinder.Instance[currentCoord + VInt3.Back], // south
+    //         PathFinder.Instance[currentCoord + VInt3.Left], // west
+    //     };
+    //
+    //     if (PathFinder.Instance.canMoveSideways)
+    //     {
+    //         directions.UnionWith(new[]
+    //         {
+    //             // Diagonal
+    //             PathFinder.Instance[currentCoord + VInt3.ForwardRight], // NorthEast
+    //             PathFinder.Instance[currentCoord + VInt3.ForwardLeft], // NorthWest
+    //             PathFinder.Instance[currentCoord + VInt3.BackRight], // southEast
+    //             PathFinder.Instance[currentCoord + VInt3.BackLeft], // SouthWest
+    //         });
+    //     }
+    //
+    //     // Vertical neighbors
+    //     if (PathFinder.Instance.canMoveVertical)
+    //     {
+    //         // up & down
+    //         List<BasePathNode> verticalNodes = new()
+    //         {
+    //             PathFinder.Instance[currentCoord + VInt3.Up],
+    //             PathFinder.Instance[currentCoord + VInt3.Down]
+    //         };
+    //
+    //         if (PathFinder.Instance.canMoveSideways)
+    //         {
+    //             // Sideways stuff
+    //             foreach (BasePathNode n in directions)
+    //             {
+    //                 if (n == null) continue;
+    //
+    //                 VInt3 cc = new VInt3(n.Coordinates.x, n.Coordinates.y, n.Coordinates.z);
+    //
+    //                 verticalNodes.Add(PathFinder.Instance[cc + VInt3.Up]);
+    //                 verticalNodes.Add(PathFinder.Instance[cc + VInt3.Down]);
+    //             }
+    //         }
+    //
+    //         directions.UnionWith(verticalNodes);
+    //     }
+    //
+    //     return directions.ToList();
+    // }
+
+    private static List<BasePathNode> CreatePath(BasePathNode start, BasePathNode goal)
     {
-        List<Node> path = new List<Node>() { goal };
+        List<BasePathNode> path = new() { goal };
 
         while (start != goal)
         {
@@ -361,10 +335,12 @@ public static class PathFindingManagers
         }
 
         path.Reverse();
+        path.Insert(0, start);
+        path.RemoveAt(path.Count - 1);
         return path;
     }
 
-    private static float CalculateHeuristic(Node start, Node goal, Heuristics heuristic)
+    private static float CalculateHeuristic(BasePathNode start, BasePathNode goal, Heuristics heuristic)
     {
         return heuristic switch
         {
@@ -380,53 +356,53 @@ public static class PathFindingManagers
 
     #region Heuristics
 
-    private static float Euclidean(Node start, Node goal)
+    private static float Euclidean(BasePathNode start, BasePathNode goal)
     {
-        int dx = Math.Abs(start.Coordinates.x - goal.Coordinates.x);
-        int dy = Math.Abs(start.Coordinates.y - goal.Coordinates.y);
-        int dz = Math.Abs(start.Coordinates.z - goal.Coordinates.z);
+        float dx = Math.Abs(start.Coordinates.X - goal.Coordinates.X);
+        float dy = Math.Abs(start.Coordinates.Y - goal.Coordinates.Y);
+        float dz = Math.Abs(start.Coordinates.Z - goal.Coordinates.Z);
 
-        int cardinal = 10;
+        float cardinal = 1f;
 
         return (float)(cardinal * Math.Sqrt(dx * dx + dy * dy + dz * dz));
     }
 
-    private static float Manhattan(Node start, Node goal)
+    private static float Manhattan(BasePathNode start, BasePathNode goal)
     {
-        int dx = Math.Abs(start.Coordinates.x - goal.Coordinates.x);
-        int dy = Math.Abs(start.Coordinates.y - goal.Coordinates.y);
-        int dz = Math.Abs(start.Coordinates.z - goal.Coordinates.z);
+        float dx = Math.Abs(start.Coordinates.X - goal.Coordinates.X);
+        float dy = Math.Abs(start.Coordinates.Y - goal.Coordinates.Y);
+        float dz = Math.Abs(start.Coordinates.Z - goal.Coordinates.Z);
 
-        int cardinal = 10;
+        float cardinal = 1f;
 
         return cardinal * (dx + dy + dz);
     }
 
-    private static float Chebsyshev(Node start, Node goal)
+    private static float Chebsyshev(BasePathNode start, BasePathNode goal)
     {
-        int dx = Math.Abs(start.Coordinates.x - goal.Coordinates.x);
-        int dy = Math.Abs(start.Coordinates.y - goal.Coordinates.y);
-        int dz = Math.Abs(start.Coordinates.z - goal.Coordinates.z);
+        float dx = Math.Abs(start.Coordinates.X - goal.Coordinates.X);
+        float dy = Math.Abs(start.Coordinates.Y - goal.Coordinates.Y);
+        float dz = Math.Abs(start.Coordinates.Z - goal.Coordinates.Z);
 
-        int cardinal = 10;
-        int diagonal = 10;
+        float cardinal = 1f;
+        float diagonal = 1f;
 
         return cardinal * (dx + dy + dz) + (diagonal - 2 * cardinal) * Math.Min(dx, Math.Min(dy, dz));
     }
 
-    private static float Octile(Node start, Node goal)
+    private static float Octile(BasePathNode start, BasePathNode goal)
     {
-        int dx = Math.Abs(start.Coordinates.x - goal.Coordinates.x);
-        int dy = Math.Abs(start.Coordinates.y - goal.Coordinates.y);
-        int dz = Math.Abs(start.Coordinates.z - goal.Coordinates.z);
+        float dx = Math.Abs(start.Coordinates.X - goal.Coordinates.X);
+        float dy = Math.Abs(start.Coordinates.Y - goal.Coordinates.Y);
+        float dz = Math.Abs(start.Coordinates.Z - goal.Coordinates.Z);
 
-        int cardinal = 10;
-        int diagonal = 14;
+        float cardinal = 1f;
+        float diagonal = 1.45f;
 
         // In 3D, the Octile equivalent considers the smallest distance as "diagonal", rest as cardinal
-        int min = Math.Min(dx, Math.Min(dy, dz));
-        int max = Math.Max(dx, Math.Max(dy, dz));
-        int mid = dx + dy + dz - min - max;
+        float min = Math.Min(dx, Math.Min(dy, dz));
+        float max = Math.Max(dx, Math.Max(dy, dz));
+        float mid = dx + dy + dz - min - max;
 
         return diagonal * min + cardinal * (mid + max - min);
     }

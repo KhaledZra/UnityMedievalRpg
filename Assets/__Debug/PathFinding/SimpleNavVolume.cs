@@ -1,34 +1,46 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NaughtyAttributes;
+using PathFinding.MethodExtensions;
+using PathFinding.Nodes;
 using UnityEngine;
-
-public class NavNode
-{
-    public Vector3 position;
-    public List<NavNode> neighbors = new();
-
-    public NavNode(Vector3 pos)
-    {
-        position = pos;
-    }
-}
 
 [RequireComponent(typeof(BoxCollider))]
 public class SimpleNavVolume : MonoBehaviour
 {
     [Header("Area")] [SerializeField] private BoxCollider volume;
+    [SerializeField] private bool canMoveDiagonal = true;
 
     [Header("Sampling")] [SerializeField] private float cellSize = 0.5f;
     [SerializeField] private float _maxSlope = 45f;
     [SerializeField] private LayerMask _walkableMask;
     [SerializeField] private LayerMask _obstacleMask;
 
-    [Header("Agent")] [SerializeField] private float _agentRadius = 0.4f;
-    [SerializeField] private float _agentHeight = 2.0f;
+    // [Header("Agent")] [SerializeField] private float _agentRadius = 0.4f;
+    // [SerializeField] private float _agentHeight = 2.0f;
 
     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
+    [SerializeField] private bool _drawGizmoLines = true;
 
-    [SerializeField] public List<NavNode> nodes = new List<NavNode>(); // todo refactor into the [,] system i had b4
+    public List<BasePathNode> pathNodes = new();
+    private List<BasePathNode> oldPath = new();
+
+    private int randomStart = 0;
+    private int randomTarget = 0;
+
+    private float _timer = 0f;
+    [SerializeField] private GameObject pathPrefab;
+
+    [Space, Header("Colors")] [SerializeField]
+    private Color startColor;
+
+    [SerializeField] private Color targetColor;
+    [SerializeField] private Color pathColor;
+    [SerializeField] private Color visitedColor;
+    [SerializeField] private Color lineColor;
+
+    [Space, SerializeField] private PathFindingManagers.Heuristics heuristic;
 
     void Awake()
     {
@@ -36,15 +48,10 @@ public class SimpleNavVolume : MonoBehaviour
         volume.isTrigger = true;
     }
 
-    // void Start()
-    // {
-    //     Generate();
-    // }
-
     [Button]
     public void Generate()
     {
-        nodes.Clear();
+        pathNodes.Clear();
 
         Bounds bounds = volume.bounds;
         Vector3 size = bounds.size;
@@ -54,7 +61,7 @@ public class SimpleNavVolume : MonoBehaviour
         int cellsX = Mathf.CeilToInt(size.x / cellSize);
         int cellsZ = Mathf.CeilToInt(size.z / cellSize);
 
-        Vector3 startPosition = minBounds + new Vector3(cellSize / 2f, 0, cellSize / 2f);
+        Vector3 startPosition = minBounds + new Vector3(cellSize / 2f, 0f, cellSize / 2f);
 
         for (int x = 0; x < cellsX; x++)
         {
@@ -87,36 +94,40 @@ public class SimpleNavVolume : MonoBehaviour
                     //         _obstacleMask)) continue;
 
 
-                    nodes.Add(new NavNode(hit.point));
+                    pathNodes.Add(new BasePathNode(hit.point.ToUnity()));
                 }
             }
         }
 
-        // todo: probably needs a refactor or something 1.5 for sideways. 1.1 for normal
-        // Adding neighbors
-        float neighborDist = cellSize * 1.5f;
 
-        for (int i = 0; i < nodes.Count; i++)
+        float neighborDist = cellSize * (canMoveDiagonal ? 1.5f : 1.25f);
+        int connectionLimit = 8; // cardinal + diagonal
+
+        foreach (BasePathNode pathNode in pathNodes)
         {
-            for (int j = 0; j < nodes.Count; j++)
+            int connections = 0;
+            foreach (BasePathNode potentialConnection in pathNodes)
             {
-                if (i == j) continue;
+                if (connections >= connectionLimit) break;
+                if (pathNode == potentialConnection) continue;
 
-                float dist = Vector3.Distance(nodes[i].position, nodes[j].position);
+                float dist = Vector3.Distance(pathNode.Coordinates.ToUnity(),
+                    potentialConnection.Coordinates.ToUnity());
                 if (dist <= neighborDist)
                 {
-                    Vector3 a = nodes[i].position + Vector3.up * 0.1f;
-                    Vector3 bPos = nodes[j].position + Vector3.up * 0.1f;
+                    Vector3 a = pathNode.Coordinates.ToUnity() + Vector3.up * 0.1f;
+                    Vector3 bPos = potentialConnection.Coordinates.ToUnity() + Vector3.up * 0.1f;
 
-                    if (!Physics.Linecast(a, bPos, _obstacleMask))
+                    if (!Physics.Linecast(a, bPos, _obstacleMask)) // make sure connection is not being blocked
                     {
-                        nodes[i].neighbors.Add(nodes[j]);
+                        pathNode.Neighbors.Add(potentialConnection);
+                        connections++;
                     }
                 }
             }
         }
 
-        Debug.Log($"Nav generated: {nodes.Count} nodes");
+        Debug.Log($"Nav generated: {pathNodes.Count} nodes");
     }
 
     bool IsWalkable(RaycastHit hit)
@@ -127,20 +138,117 @@ public class SimpleNavVolume : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        if (!_drawGizmos || nodes == null) return;
+        if (!_drawGizmos || pathNodes == null) return;
 
-        Gizmos.color = Color.green;
-        foreach (var node in nodes)
+        foreach (var node in pathNodes)
         {
-            Gizmos.DrawSphere(node.position, cellSize * 0.2f);
+            Gizmos.color = SwitchColorOnState(node.State);
+            Gizmos.DrawSphere(node.Coordinates.ToUnity(), cellSize * 0.2f);
 
-            Gizmos.color = Color.yellow;
-            foreach (var n in node.neighbors)
+            if (_drawGizmoLines)
             {
-                Gizmos.DrawLine(node.position, n.position);
+                Gizmos.color = lineColor;
+                foreach (var n in node.Neighbors)
+                {
+                    Gizmos.DrawLine(node.Coordinates.ToUnity(), n.Coordinates.ToUnity());
+                }
             }
+        }
+    }
 
-            Gizmos.color = Color.green;
+    private Color SwitchColorOnState(NodeState state)
+    {
+        if (state == NodeState.Visited) return visitedColor;
+        if (state == NodeState.Path) return pathColor;
+
+        return Color.green;
+    }
+
+    [Button]
+    private void Astar()
+    {
+        PreSetupPathFinding();
+
+        _ = PathFindingManagers.AstarPath(
+            pathNodes[randomStart],
+            pathNodes[randomTarget], heuristic, PathCallBack);
+    }
+
+    [Button]
+    private void Dijkstra()
+    {
+        PreSetupPathFinding();
+
+        _ = PathFindingManagers.DijkstraPath(
+            pathNodes[randomStart],
+            pathNodes[randomTarget], heuristic, PathCallBack);
+    }
+
+    [Button]
+    private void BreadthFirstSearch()
+    {
+        PreSetupPathFinding();
+
+        _ = PathFindingManagers.BreadthFirstSearch(
+            pathNodes[randomStart],
+            pathNodes[randomTarget], PathCallBack);
+    }
+
+    [Button]
+    public void FloodFill()
+    {
+        PreSetupPathFinding();
+
+        _ = PathFindingManagers.FloodFillPathAsync(
+            pathNodes[randomStart], PathCallBack);
+    }
+
+    private void PathCallBack(List<BasePathNode> path, HashSet<BasePathNode> visited)
+    {
+        if (path == null)
+        {
+            Debug.LogWarning("Path failed");
+            return;
+        }
+
+        Debug.Log("Time to calculate path: " + (Time.realtimeSinceStartup - _timer).ToString("F3") + " seconds");
+        Debug.Log("Path generated!");
+
+        StartCoroutine(GeneratePath(path, visited));
+    }
+
+    private void PreSetupPathFinding()
+    {
+        // Clean up if any old path
+        oldPath.ForEach(path => { path.State = NodeState.Default; });
+        oldPath.Clear();
+
+        // Get new random targets
+        randomStart = Random.Range(0, pathNodes.Count);
+        randomTarget = Random.Range(0, pathNodes.Count);
+
+        // Reset Timer
+        _timer = Time.realtimeSinceStartup;
+    }
+
+    IEnumerator GeneratePath(List<BasePathNode> path, HashSet<BasePathNode> visited = null)
+    {
+        foreach (BasePathNode p in path)
+        {
+            oldPath.Add(p);
+            p.State = NodeState.Path;
+
+            // yield return new WaitForSeconds(0.1f);
+        }
+
+        if (visited == null) yield break;
+
+        foreach (BasePathNode p in visited)
+        {
+            oldPath.Add(p);
+            p.State = NodeState.Visited;
+
+            // yield return new WaitForSeconds(0.01f);
         }
     }
 }

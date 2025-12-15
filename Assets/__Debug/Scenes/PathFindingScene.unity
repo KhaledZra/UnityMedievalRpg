@@ -184,6 +184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   volume: {fileID: 197062751}
+  canMoveDiagonal: 1
   cellSize: 2
   _maxSlope: 45
   _walkableMask:
@@ -192,9 +193,15 @@ MonoBehaviour:
   _obstacleMask:
     serializedVersion: 2
     m_Bits: 2048
-  _agentRadius: 0.4
-  _agentHeight: 2
   _drawGizmos: 1
+  _drawGizmoLines: 1
+  pathPrefab: {fileID: 8009570081157066540, guid: c614e82ebad9dfa4d96feba010a93c7d, type: 3}
+  startColor: {r: 1, g: 0, b: 0, a: 1}
+  targetColor: {r: 1, g: 0, b: 0, a: 1}
+  pathColor: {r: 1, g: 0, b: 0.70153284, a: 1}
+  visitedColor: {r: 1, g: 0.824983, b: 0, a: 1}
+  lineColor: {r: 0.017939806, g: 1, b: 0, a: 0.13725491}
+  heuristic: 2
 --- !u!65 &197062751
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -210,7 +217,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -862,21 +869,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26fe501ffcb82a049b6e12537f317fac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodePrefab: {fileID: 456541177856641572, guid: 5519705aef5d95a40941935448c0a823, type: 3}
-  pathPrefab: {fileID: 8009570081157066540, guid: c614e82ebad9dfa4d96feba010a93c7d, type: 3}
-  startColor: {r: 1, g: 0, b: 0, a: 1}
-  targetColor: {r: 0, g: 0.09131837, b: 1, a: 1}
-  pathColor: {r: 0.8937168, g: 0, b: 1, a: 0}
-  visitedColor: {r: 1, g: 0.8235295, b: 0, a: 0}
-  start: {x: 0, y: 0, z: 0}
-  target: {x: 5, y: 8, z: 0}
-  NavMeshSize: {x: 40, y: 5, z: 40}
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 2048
-  canMoveSideways: 1
-  canMoveVertical: 1
-  heuristic: 3
 --- !u!1 &1487696508
 GameObject:
   m_ObjectHideFlags: 0
