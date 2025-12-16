@@ -26,8 +26,8 @@ public class SimpleNavVolume : MonoBehaviour
     public List<BasePathNode> pathNodes = new();
     private List<BasePathNode> oldPath = new();
 
-    private int randomStart = 0;
-    private int randomTarget = 0;
+    [SerializeField] private int randomStart = 0;
+    [SerializeField] private int randomTarget = 0;
 
     private float _timer = 0f;
     [SerializeField] private GameObject pathPrefab;
@@ -220,12 +220,17 @@ public class SimpleNavVolume : MonoBehaviour
     private void PreSetupPathFinding()
     {
         // Clean up if any old path
-        oldPath.ForEach(path => { path.State = NodeState.Default; });
+        pathNodes.ForEach(path =>
+        {
+            path.State = NodeState.Default;
+            path.Parent = null;
+        });
+        
         oldPath.Clear();
 
-        // Get new random targets
-        randomStart = Random.Range(0, pathNodes.Count);
-        randomTarget = Random.Range(0, pathNodes.Count);
+        // // Get new random targets
+        // randomStart = Random.Range(0, pathNodes.Count);
+        // randomTarget = Random.Range(0, pathNodes.Count);
 
         // Reset Timer
         _timer = Time.realtimeSinceStartup;

@@ -184,7 +184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   volume: {fileID: 197062751}
-  canMoveDiagonal: 1
+  canMoveDiagonal: 0
   cellSize: 2
   _maxSlope: 45
   _walkableMask:
@@ -194,14 +194,16 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2048
   _drawGizmos: 1
-  _drawGizmoLines: 1
+  _drawGizmoLines: 0
+  randomStart: 0
+  randomTarget: 576
   pathPrefab: {fileID: 8009570081157066540, guid: c614e82ebad9dfa4d96feba010a93c7d, type: 3}
   startColor: {r: 1, g: 0, b: 0, a: 1}
   targetColor: {r: 1, g: 0, b: 0, a: 1}
   pathColor: {r: 1, g: 0, b: 0.70153284, a: 1}
   visitedColor: {r: 1, g: 0.824983, b: 0, a: 1}
   lineColor: {r: 0.017939806, g: 1, b: 0, a: 0.13725491}
-  heuristic: 2
+  heuristic: 3
 --- !u!65 &197062751
 BoxCollider:
   m_ObjectHideFlags: 0

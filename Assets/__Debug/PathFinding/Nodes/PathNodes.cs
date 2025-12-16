@@ -22,6 +22,7 @@ namespace PathFinding.Nodes
         public BasePathNode(Vector3 pos)
         {
             Coordinates = pos;
+            Parent = null;
             State = NodeState.Default;
         }
     }
